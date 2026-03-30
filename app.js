@@ -1,6 +1,6 @@
 // News Terminal Configuration
 const FF_CAL_URL = "https://nfs.faireconomy.media/ff_calendar_thisweek.xml";
-const FF_PROXY = `https://corsproxy.io/?url=${encodeURIComponent(FF_CAL_URL)}`;
+const FF_PROXY = `/api/news`;
 
 // Initialize Icons
 lucide.createIcons();
