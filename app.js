@@ -1,3 +1,7 @@
+// News Terminal Configuration
+const FF_CAL_URL = "https://nfs.faireconomy.media/ff_calendar_thisweek.xml";
+const FF_PROXY = `https://corsproxy.io/?url=${encodeURIComponent(FF_CAL_URL)}`;
+
 // Initialize Icons
 lucide.createIcons();
 
@@ -1167,12 +1171,9 @@ window.calcFutures = calcFutures;
 window.onFuturesInstrumentChange = onFuturesInstrumentChange;
 
 
-
 // ============================================================
 // NEWS TERMINAL (Forex Factory XML Feed)
 // ============================================================
-const FF_CAL_URL = "https://nfs.faireconomy.media/ff_calendar_thisweek.xml";
-const FF_PROXY = `https://api.allorigins.win/raw?url=${encodeURIComponent(FF_CAL_URL)}`;
 
 async function fetchNewsCalendar() {
     const tbody = document.getElementById('ff-calendar-body');
