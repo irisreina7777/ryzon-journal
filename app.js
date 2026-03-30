@@ -35,6 +35,7 @@ function initMobileUI() {
 // Init on load + resize
 initMobileUI();
 window.addEventListener('resize', initMobileUI);
+fetchNewsCalendar(); // Start loading live news feed immediately on load
 
 // Register PWA Service Worker
 if ('serviceWorker' in navigator) {
@@ -174,6 +175,7 @@ navBtns.forEach(btn => {
         });
         if (targetId === 'view-dashboard') renderChart();
         if (targetId === 'view-edge') renderEdge();
+        if (targetId === 'view-calendar') fetchNewsCalendar();
     });
 });
 
@@ -1165,3 +1167,74 @@ window.calcFutures = calcFutures;
 window.onFuturesInstrumentChange = onFuturesInstrumentChange;
 
 
+
+// ============================================================
+// NEWS TERMINAL (Forex Factory XML Feed)
+// ============================================================
+const FF_CAL_URL = "https://nfs.faireconomy.media/ff_calendar_thisweek.xml";
+const FF_PROXY = `https://api.allorigins.win/raw?url=${encodeURIComponent(FF_CAL_URL)}`;
+
+async function fetchNewsCalendar() {
+    const tbody = document.getElementById('ff-calendar-body');
+    if (!tbody) return;
+
+    try {
+        const response = await fetch(FF_PROXY);
+        const xmlText = await response.text();
+        const parser = new DOMParser();
+        const xmlDoc = parser.parseFromString(xmlText, "text/xml");
+        const entries = Array.from(xmlDoc.getElementsByTagName('event'));
+        
+        const events = entries.map(event => ({
+            title: event.getElementsByTagName('title')[0]?.textContent,
+            country: event.getElementsByTagName('country')[0]?.textContent,
+            date: event.getElementsByTagName('date')[0]?.textContent,
+            time: event.getElementsByTagName('time')[0]?.textContent,
+            impact: event.getElementsByTagName('impact')[0]?.textContent,
+            forecast: event.getElementsByTagName('forecast')[0]?.textContent,
+            previous: event.getElementsByTagName('previous')[0]?.textContent
+        }));
+
+        renderNewsTable(events);
+        document.getElementById('cal-week-label').textContent = "This Week's High Impact News";
+    } catch (error) {
+        console.error("News Terminal Error:", error);
+        tbody.innerHTML = `<tr><td colspan="7" style="text-align:center; padding:3rem; color:var(--danger);">Failed to load live feed. Try refreshing.</td></tr>`;
+    }
+}
+
+function renderNewsTable(events) {
+    const tbody = document.getElementById('ff-calendar-body');
+    if (!tbody) return;
+    tbody.innerHTML = '';
+
+    let lastDate = "";
+    events.forEach(ev => {
+        // Impact Class
+        let impactClass = 'impact-none';
+        const imp = ev.impact.toLowerCase();
+        if (imp.includes('high')) impactClass = 'impact-high';
+        else if (imp.includes('medium')) impactClass = 'impact-medium';
+        else if (imp.includes('low')) impactClass = 'impact-low';
+
+        // Date Header
+        if (ev.date !== lastDate) {
+            const dateRow = document.createElement('tr');
+            dateRow.innerHTML = `<td colspan="7" class="ff-date-header">${ev.date}</td>`;
+            tbody.appendChild(dateRow);
+            lastDate = ev.date;
+        }
+
+        const row = document.createElement('tr');
+        row.innerHTML = `
+            <td class="ff-time">${ev.time}</td>
+            <td class="ff-currency">${ev.country}</td>
+            <td><div class="impact-badge ${impactClass}" title="${ev.impact}"></div></td>
+            <td class="ff-event">${ev.title}</td>
+            <td class="ff-actual">-</td>
+            <td class="ff-forecast">${ev.forecast || '-'}</td>
+            <td class="ff-previous">${ev.previous || '-'}</td>
+        `;
+        tbody.appendChild(row);
+    });
+}

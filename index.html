@@ -324,23 +324,30 @@
                             <span style="display:flex; align-items:center; gap:0.3rem;"><i data-lucide="clock" style="width:12px;height:12px;"></i> Filtered by Impact</span>
                         </div>
                     </div>
-                    <div id="calendar-events" style="min-height: 550px;">
-                        <!-- TradingView Widget BEGIN -->
-                        <div class="tradingview-widget-container" style="width: 100%; height: 550px;">
-                            <div class="tradingview-widget-container__widget"></div>
-                            <script type="text/javascript" src="https://s3.tradingview.com/external-embedding/embed-widget-events.js" async>
-                            {
-                                "width": "100%",
-                                "height": "550",
-                                "colorTheme": "light",
-                                "isTransparent": true,
-                                "locale": "en",
-                                "importanceFilter": "0,1",
-                                "currencyFilter": "USD,EUR,GBP,JPY,CAD,AUD,NZD,CHF"
-                            }
-                            </script>
-                        </div>
-                        <!-- TradingView Widget END -->
+                    <div id="calendar-events" style="min-height: 550px; overflow-x: auto;">
+                        <table class="ff-table" id="ff-calendar-table">
+                            <thead>
+                                <tr>
+                                    <th style="width: 80px;">Time</th>
+                                    <th style="width: 60px;">Cur</th>
+                                    <th style="width: 40px;">Imp</th>
+                                    <th>Event</th>
+                                    <th style="text-align: right;">Actual</th>
+                                    <th style="text-align: right;">Forecast</th>
+                                    <th style="text-align: right;">Previous</th>
+                                </tr>
+                            </thead>
+                            <tbody id="ff-calendar-body">
+                                <tr>
+                                    <td colspan="7" style="text-align: center; padding: 3rem; color: var(--text-muted);">
+                                        <div class="flex-center" style="flex-direction: column; gap: 1rem;">
+                                            <div class="spinner" style="width: 24px; height: 24px; border: 2px solid var(--border-color); border-top-color: var(--brand-blue); border-radius: 50%; animation: spin 0.8s linear infinite;"></div>
+                                            <span>Loading live news feed...</span>
+                                        </div>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
                     </div>
                 </div>
             </section>
@@ -364,15 +371,15 @@
                         <h3 style="margin-bottom:1.25rem;">Trade Parameters</h3>
                         <div class="form-group">
                             <label>Account Balance ($)</label>
-                            <input type="number" id="calc-balance" class="input-field" value="10000" oninput="calcLotSize()">
+                            <input type="number" id="calc-balance" class="input-field" value="10000" oninput="calcLotSize();">
                         </div>
                         <div class="form-group mt-3">
                             <label>Risk Per Trade (%)</label>
-                            <input type="number" id="calc-risk" class="input-field" value="1" step="0.1" oninput="calcLotSize()">
+                            <input type="number" id="calc-risk" class="input-field" value="1" step="0.1" oninput="calcLotSize();">
                         </div>
                         <div class="form-group mt-3">
                             <label>Stop Loss (Pips)</label>
-                            <input type="number" id="calc-sl-pips" class="input-field" value="20" oninput="calcLotSize()">
+                            <input type="number" id="calc-sl-pips" class="input-field" value="20" oninput="calcLotSize();">
                         </div>
                         <div class="form-group mt-3">
                             <label>Instrument Type</label>
@@ -423,19 +430,19 @@
                             <h3 style="margin-bottom:1.25rem;">Futures Parameters</h3>
                             <div class="form-group">
                                 <label>Account Balance ($)</label>
-                                <input type="number" id="fut-balance" class="input-field" value="25000" oninput="calcFutures()">
+                                <input type="number" id="fut-balance" class="input-field" value="25000" oninput="calcFutures();">
                             </div>
                             <div class="form-group mt-3">
                                 <label>Risk Per Trade (%)</label>
-                                <input type="number" id="fut-risk" class="input-field" value="1" step="0.1" min="0.1" oninput="calcFutures()">
+                                <input type="number" id="fut-risk" class="input-field" value="1" step="0.1" min="0.1" oninput="calcFutures();">
                             </div>
                             <div class="form-group mt-3">
                                 <label>Stop Loss (Ticks)</label>
-                                <input type="number" id="fut-sl-ticks" class="input-field" value="8" min="1" oninput="calcFutures()">
+                                <input type="number" id="fut-sl-ticks" class="input-field" value="8" min="1" oninput="calcFutures();">
                             </div>
                             <div class="form-group mt-3">
                                 <label>Futures Instrument</label>
-                                <select id="fut-instrument" class="input-field" onchange="onFuturesInstrumentChange()">
+                                <select id="fut-instrument" class="input-field" onchange="onFuturesInstrumentChange();">
                                     <optgroup label="Equity Index">
                                         <option value="ES">ES — S&amp;P 500 (Standard)</option>
                                         <option value="MES">MES — Micro S&amp;P 500</option>
@@ -478,8 +485,8 @@
                                 <div style="background:#F0F4FF; border-radius:0.5rem; padding:0.875rem; border:1px solid #C7D2FE;">
                                     <p style="font-size:0.75rem; font-weight:600; color:var(--brand-blue); margin-bottom:0.75rem;">Custom Contract Specs</p>
                                     <div style="display:grid; grid-template-columns:1fr 1fr; gap:0.75rem;">
-                                        <div><label style="font-size:0.75rem;">Tick Size</label><input type="number" id="fut-custom-tick-size" class="input-field" value="0.25" step="0.01" oninput="calcFutures()"></div>
-                                        <div><label style="font-size:0.75rem;">Tick Value ($)</label><input type="number" id="fut-custom-tick-val" class="input-field" value="12.50" step="0.01" oninput="calcFutures()"></div>
+                                        <div><label style="font-size:0.75rem;">Tick Size</label><input type="number" id="fut-custom-tick-size" class="input-field" value="0.25" step="0.01" oninput="calcFutures();"></div>
+                                        <div><label style="font-size:0.75rem;">Tick Value ($)</label><input type="number" id="fut-custom-tick-val" class="input-field" value="12.50" step="0.01" oninput="calcFutures();"></div>
                                     </div>
                                 </div>
                             </div>

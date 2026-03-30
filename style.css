@@ -887,3 +887,57 @@ div:hover > .delete-row-btn { opacity: 1; }
     background-color: #FFF9C4 !important;
 }
 
+/* ---- News Terminal (Forex Factory Style) ---- */
+.ff-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.8rem;
+}
+.ff-table th {
+    background-color: var(--bg-main);
+    padding: 0.6rem 0.8rem;
+    text-align: left;
+    font-weight: 600;
+    color: var(--text-secondary);
+    border-bottom: 1px solid var(--border-color);
+}
+.ff-table td {
+    padding: 0.75rem 0.8rem;
+    border-bottom: 1px solid var(--border-color);
+    vertical-align: middle;
+}
+.ff-table tr:hover { background-color: var(--bg-main); }
+
+.impact-badge {
+    width: 14px;
+    height: 12px;
+    border-radius: 1px;
+    display: inline-block;
+    border: 1px solid rgba(0,0,0,0.1);
+}
+.impact-high { background-color: #ef4444; box-shadow: 0 0 4px rgba(239, 68, 68, 0.4); }
+.impact-medium { background-color: #f97316; box-shadow: 0 0 4px rgba(249, 115, 22, 0.4); }
+.impact-low { background-color: #facc15; box-shadow: 0 0 4px rgba(250, 204, 21, 0.4); }
+.impact-none { background-color: #d1d5db; }
+
+.ff-date-header {
+    background: #f8fafc;
+    color: var(--text-secondary);
+    font-size: 0.7rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    padding: 0.4rem 1rem !important;
+    border-left: 3px solid var(--brand-blue);
+}
+
+.ff-time { font-weight: 600; color: var(--text-primary); width: 80px; }
+.ff-currency { font-weight: 700; color: var(--text-secondary); width: 60px; }
+.ff-event { font-weight: 500; color: var(--text-primary); }
+.ff-actual { font-weight: 700; text-align: right; }
+.ff-forecast, .ff-previous { color: var(--text-muted); text-align: right; width: 80px; }
+
+@media (max-width: 768px) {
+    .ff-forecast, .ff-previous { display: none; }
+    .ff-time { width: 60px; }
+}
