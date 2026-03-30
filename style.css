@@ -571,6 +571,16 @@ label {
 .custom-checkbox.square { border-radius: 4px; border: 1px solid #D1D5DB; }
 
 /* ============================================
+   RESPONSIVE LAYOUT CLASSES (Desktop Defaults)
+   ============================================ */
+.edge-layout { display: flex; gap: 2rem; align-items: flex-start; }
+.edge-sidebar { width: 230px; flex-shrink: 0; }
+.edge-editor-panel { flex: 1; margin: 0; max-width: none; }
+.notebook-layout { display: grid; grid-template-columns: 260px 1fr; gap: 1.5rem; min-height: 500px; }
+.calc-panel { display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; max-width: 900px; }
+#panel-futures .calc-panel { max-width: 980px; }
+
+/* ============================================
    MOBILE RESPONSIVE — Full Overhaul
    ============================================ */
 
@@ -707,6 +717,12 @@ label {
 
     /* --- Journal view header --- */
     .flex-between.view-header { flex-direction: column; align-items: flex-start; gap: 0.75rem; }
+
+    /* --- Specific Layout Overrides --- */
+    .edge-layout { flex-direction: column; }
+    .edge-sidebar { width: 100%; }
+    .notebook-layout { grid-template-columns: 1fr; }
+    .calc-panel { grid-template-columns: 1fr !important; }
 }
 
 @media (max-width: 400px) {

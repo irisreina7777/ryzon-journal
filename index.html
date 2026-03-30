@@ -128,24 +128,27 @@
 
             <!-- Edge Playbook View -->
             <section id="view-edge" class="view-section hidden">
-                <header class="view-header flex-between align-baseline mb-2">
-                    <div>
-                        <h1 class="flex-align">Ryzon <span class="text-secondary text-sm fw-normal ml-2">Build and refine your trading playbooks — your rules, biases, and edge in one place.</span></h1>
+                <header class="view-header mb-2">
+                    <div style="display:flex; justify-content:space-between; align-items:flex-start; gap:1rem; flex-wrap:wrap;">
+                        <div>
+                            <h1>Ryzon</h1>
+                            <p class="subtitle">Build and refine your trading playbooks — your rules, biases, and edge in one place.</p>
+                        </div>
+                        <button class="btn btn-ghost border text-brand btn-sm" onclick="openNewPlanModal()" style="flex-shrink:0;">
+                            <i data-lucide="plus"></i> New Plan
+                        </button>
                     </div>
-                    <button class="btn btn-ghost border text-brand btn-sm" onclick="openNewPlanModal()">
-                        <i data-lucide="plus"></i> New Plan
-                    </button>
                 </header>
 
-                <div class="edge-layout" style="display: flex; gap: 2rem; align-items: flex-start;">
+                <div class="edge-layout">
                     <!-- Plans Sidebar -->
-                    <aside class="edge-sidebar" style="width: 230px; flex-shrink: 0;">
+                    <aside class="edge-sidebar">
                         <h3 class="text-xs text-muted uppercase fw-medium mb-3 pl-2">My Plans</h3>
                         <div class="plan-list" id="plan-list"></div>
                     </aside>
 
                     <!-- Plan Editor -->
-                    <div class="edge-container card px-8 py-6" style="flex: 1; margin: 0; max-width: none;" id="edge-editor">
+                    <div class="edge-container card px-8 py-6 edge-editor-panel" id="edge-editor">
                         <!-- Populated by JS -->
                     </div>
                 </div>
@@ -265,7 +268,7 @@
                     </div>
                     <button class="btn btn-primary" onclick="addNote()"><i data-lucide="plus"></i> New Note</button>
                 </header>
-                <div style="display:grid; grid-template-columns:260px 1fr; gap:1.5rem; min-height:500px;">
+                <div class="notebook-layout">
                     <!-- Note List -->
                     <div class="card" style="padding:1rem;">
                         <div style="display:flex; gap:0.5rem; margin-bottom:1rem;">
@@ -350,7 +353,7 @@
                 </div>
 
                 <!-- Forex / Gold Panel -->
-                <div id="panel-forex" style="display:grid; grid-template-columns:1fr 1fr; gap:1.5rem; max-width:900px;">
+                <div id="panel-forex" class="calc-panel">
                     <!-- Inputs -->
                     <div class="card" style="padding:1.5rem;">
                         <h3 style="margin-bottom:1.25rem;">Trade Parameters</h3>
@@ -409,7 +412,7 @@
 
                 <!-- Futures Panel -->
                 <div id="panel-futures" style="display:none; max-width:980px;">
-                    <div style="display:grid; grid-template-columns:1fr 1fr; gap:1.5rem;">
+                    <div class="calc-panel">
                         <!-- Inputs -->
                         <div class="card" style="padding:1.5rem;">
                             <h3 style="margin-bottom:1.25rem;">Futures Parameters</h3>
