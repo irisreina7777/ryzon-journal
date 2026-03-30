@@ -58,45 +58,6 @@ document.querySelectorAll('.nav-btn[data-target]').forEach(btn => {
 // are declared as regular functions and are automatically on the global scope.
 
 
-// --- BACKUP & RESTORE DATA ---
-function exportBackupData() {
-    const data = localStorage.getItem(APP_STATE_KEY);
-    if (!data) return alert("Content is empty! Nothing to backup.");
-    
-    const blob = new Blob([data], { type: "application/json" });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement("a");
-    a.href = url;
-    a.download = `ryzon_backup_${new Date().toISOString().split('T')[0]}.json`;
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
-    URL.revokeObjectURL(url);
-}
-
-function importBackupData(event) {
-    const file = event.target.files[0];
-    if (!file) return;
-    
-    const reader = new FileReader();
-    reader.onload = function(e) {
-        try {
-            const parsedData = JSON.parse(e.target.result);
-            if (!parsedData.plans && !parsedData.trades) throw new Error("Unrecognized format");
-            
-            if (confirm("WARNING: Restoring this file will overwrite your current trades and playbooks! Continue?")) {
-                localStorage.setItem(APP_STATE_KEY, JSON.stringify(parsedData));
-                alert("Data Successfully Restored! The app will now reload to apply the backup.");
-                location.reload();
-            }
-        } catch (err) {
-            alert("Error: This doesn't look like a valid RYZON backup file.");
-        }
-    };
-    reader.readAsText(file);
-    event.target.value = ''; // reset so same file could be picked if needed
-}
-
 // --- STATE MANAGEMENT ---
 const APP_STATE_KEY = 'iris_state_v2';
 
