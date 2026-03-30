@@ -1,6 +1,49 @@
 // Initialize Icons
 lucide.createIcons();
 
+// ============================================================
+// MOBILE SIDEBAR (Drawer Navigation)
+// ============================================================
+function toggleMobileSidebar() {
+    const sidebar = document.querySelector('.sidebar');
+    const overlay = document.getElementById('sidebar-overlay');
+    const isOpen = sidebar.classList.contains('open');
+    if (isOpen) {
+        closeMobileSidebar();
+    } else {
+        sidebar.classList.add('open');
+        overlay.classList.add('active');
+        document.body.style.overflow = 'hidden';
+    }
+}
+
+function closeMobileSidebar() {
+    const sidebar = document.querySelector('.sidebar');
+    const overlay = document.getElementById('sidebar-overlay');
+    sidebar.classList.remove('open');
+    overlay.classList.remove('active');
+    document.body.style.overflow = '';
+}
+
+function initMobileUI() {
+    const topbar = document.getElementById('mobile-topbar');
+    const isMobile = window.innerWidth <= 768;
+    if (topbar) topbar.style.display = isMobile ? 'flex' : 'none';
+    if (!isMobile) closeMobileSidebar();
+}
+
+// Init on load + resize
+initMobileUI();
+window.addEventListener('resize', initMobileUI);
+
+// Auto-close sidebar when a nav item is clicked on mobile
+document.querySelectorAll('.nav-btn[data-target]').forEach(btn => {
+    btn.addEventListener('click', () => {
+        if (window.innerWidth <= 768) closeMobileSidebar();
+    });
+});
+
+
 // NOTE: All onclick-called functions (openNewPlanModal, createNewPlan, closeNewPlanModal,
 // openRiskModal, closeRiskModal, deletePlan, duplicatePlan, togglePlanActive, markReviewed,
 // addCriteria, deleteCriteria, saveCriteriaCheck, saveCriteriaText, saveField,

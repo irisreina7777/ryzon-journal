@@ -52,6 +52,18 @@
             </div>
         </aside>
 
+        <!-- Mobile Top Bar (hidden on desktop) -->
+        <div class="mobile-topbar" id="mobile-topbar" style="display:none;">
+            <button class="mobile-menu-btn" id="mobile-menu-btn" onclick="toggleMobileSidebar()" aria-label="Open menu">
+                <i data-lucide="menu" style="width:24px;height:24px;"></i>
+            </button>
+            <span class="mobile-topbar-title">RYZON</span>
+            <img src="ryzon_logo.png" alt="RYZE" style="width:36px; height:36px; object-fit:contain; border-radius:6px;">
+        </div>
+
+        <!-- Sidebar Overlay (mobile backdrop) -->
+        <div class="sidebar-overlay" id="sidebar-overlay" onclick="closeMobileSidebar()"></div>
+
         <!-- Main Content Area -->
         <main class="content-area">
             
