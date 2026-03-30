@@ -887,57 +887,103 @@ div:hover > .delete-row-btn { opacity: 1; }
     background-color: #FFF9C4 !important;
 }
 
-/* ---- News Terminal (Forex Factory Style) ---- */
-.ff-table {
-    width: 100%;
-    border-collapse: collapse;
-    font-size: 0.8rem;
+/* ---- Monthly Grid Calendar (Skool Style) ---- */
+.ryzon-calendar-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1.5rem 1rem;
+    border-bottom: 1px solid var(--border-color);
+    background: white;
 }
-.ff-table th {
-    background-color: var(--bg-main);
-    padding: 0.6rem 0.8rem;
-    text-align: left;
+.ryzon-calendar-header h2 {
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: var(--text-primary);
+}
+.ryzon-calendar-weekdays {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    border-bottom: 1px solid var(--border-color);
+    background: #f8fafc;
+}
+.ryzon-calendar-weekdays > div {
+    padding: 0.75rem 0.5rem;
+    text-align: center;
+    font-size: 0.75rem;
+    font-weight: 700;
+    color: var(--text-secondary);
+    text-transform: uppercase;
+}
+.ryzon-calendar-grid {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    background: var(--border-color); /* Creates 1px borders via gap */
+    gap: 1px;
+}
+.ryzon-calendar-cell {
+    background: white;
+    min-height: 120px;
+    padding: 0.5rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+}
+@media (max-width: 768px) {
+    .ryzon-calendar-cell { min-height: 80px; padding: 0.25rem; }
+    .ryzon-calendar-weekdays > div { font-size: 0.65rem; padding: 0.5rem 0.25rem; }
+}
+.ryzon-calendar-cell.has-data:hover {
+    background: #f8fafc;
+}
+.ryzon-calendar-date {
+    font-size: 0.8rem;
     font-weight: 600;
     color: var(--text-secondary);
-    border-bottom: 1px solid var(--border-color);
+    margin-bottom: 0.5rem;
 }
-.ff-table td {
-    padding: 0.75rem 0.8rem;
-    border-bottom: 1px solid var(--border-color);
-    vertical-align: middle;
+.ryzon-calendar-date.is-today {
+    color: var(--brand-blue);
+    font-weight: 800;
+    width: 24px;
+    height: 24px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: #eff6ff;
+    border-radius: 50%;
 }
-.ff-table tr:hover { background-color: var(--bg-main); }
+.ryzon-calendar-event {
+    display: flex;
+    align-items: flex-start;
+    gap: 0.35rem;
+    font-size: 0.65rem;
+    line-height: 1.2;
+    padding: 0.25rem;
+    border-radius: 4px;
+    transition: background 0.2s;
+    cursor: default;
+}
+.ryzon-calendar-event:hover {
+    background: var(--bg-main);
+}
+.ryzon-calendar-event-time {
+    color: var(--brand-blue);
+    font-weight: 600;
+    white-space: nowrap;
+}
+.ryzon-calendar-event-title {
+    color: var(--text-primary);
+}
 
 .impact-badge {
-    width: 14px;
+    min-width: 6px;
     height: 12px;
-    border-radius: 1px;
+    border-radius: 8px;
+    margin-top: 1px;
     display: inline-block;
-    border: 1px solid rgba(0,0,0,0.1);
 }
 .impact-high { background-color: #ef4444; box-shadow: 0 0 4px rgba(239, 68, 68, 0.4); }
 .impact-medium { background-color: #f97316; box-shadow: 0 0 4px rgba(249, 115, 22, 0.4); }
 .impact-low { background-color: #facc15; box-shadow: 0 0 4px rgba(250, 204, 21, 0.4); }
 .impact-none { background-color: #d1d5db; }
-
-.ff-date-header {
-    background: #f8fafc;
-    color: var(--text-secondary);
-    font-size: 0.7rem;
-    font-weight: 700;
-    text-transform: uppercase;
-    letter-spacing: 0.05em;
-    padding: 0.4rem 1rem !important;
-    border-left: 3px solid var(--brand-blue);
-}
-
-.ff-time { font-weight: 600; color: var(--text-primary); width: 80px; }
-.ff-currency { font-weight: 700; color: var(--text-secondary); width: 60px; }
-.ff-event { font-weight: 500; color: var(--text-primary); }
-.ff-actual { font-weight: 700; text-align: right; }
-.ff-forecast, .ff-previous { color: var(--text-muted); text-align: right; width: 80px; }
-
-@media (max-width: 768px) {
-    .ff-forecast, .ff-previous { display: none; }
-    .ff-time { width: 60px; }
-}

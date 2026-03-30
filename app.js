@@ -1,7 +1,3 @@
-// News Terminal Configuration
-const FF_CAL_URL = "https://nfs.faireconomy.media/ff_calendar_thisweek.xml";
-const FF_PROXY = `/api/news`;
-
 // Initialize Icons
 lucide.createIcons();
 
@@ -39,7 +35,6 @@ function initMobileUI() {
 // Init on load + resize
 initMobileUI();
 window.addEventListener('resize', initMobileUI);
-fetchNewsCalendar(); // Start loading live news feed immediately on load
 
 // Register PWA Service Worker
 if ('serviceWorker' in navigator) {
@@ -1170,90 +1165,4 @@ window.switchCalcTab = switchCalcTab;
 window.calcFutures = calcFutures;
 window.onFuturesInstrumentChange = onFuturesInstrumentChange;
 
-
-// ============================================================
-// NEWS TERMINAL (Forex Factory XML Feed)
-// ============================================================
-
-async function fetchNewsCalendar() {
-    const tbody = document.getElementById('ff-calendar-body');
-    if (!tbody) return;
-
-    try {
-        const response = await fetch(FF_PROXY);
-        if (!response.ok) throw new Error("API Limit Reached or Proxy Error");
-        
-        const jsonEvents = await response.json();
-        
-        const events = jsonEvents.map(event => {
-            const d = new Date(event.date); // Parses the ISO timestamp to local timezone automatically
-            
-            // Local Date String (mm-dd-yyyy)
-            const month = String(d.getMonth() + 1).padStart(2, '0');
-            const day = String(d.getDate()).padStart(2, '0');
-            const year = d.getFullYear();
-            const localDate = `${month}-${day}-${year}`;
-            
-            // Local Time String (h:mmpm)
-            let hours = d.getHours();
-            const ampm = hours >= 12 ? 'pm' : 'am';
-            hours = hours % 12;
-            hours = hours ? hours : 12; 
-            const minutes = String(d.getMinutes()).padStart(2, '0');
-            const localTime = `${hours}:${minutes}${ampm}`;
-
-            return {
-                title: event.title,
-                country: event.country,
-                date: localDate,
-                time: localTime,
-                impact: event.impact || 'Low',
-                forecast: event.forecast,
-                previous: event.previous
-            };
-        });
-
-        renderNewsTable(events);
-        const label = document.getElementById('cal-week-label');
-        if(label) label.textContent = "This Week's High Impact News";
-    } catch (error) {
-        console.error("News Terminal Error:", error);
-        tbody.innerHTML = `<tr><td colspan="7" style="text-align:center; padding:3rem; color:var(--text-muted);">Could not fetch feed (Global Vercel limit reached). Please wait 5 minutes and refresh the page.</td></tr>`;
-    }
-}
-
-function renderNewsTable(events) {
-    const tbody = document.getElementById('ff-calendar-body');
-    if (!tbody) return;
-    tbody.innerHTML = '';
-
-    let lastDate = "";
-    events.forEach(ev => {
-        // Impact Class
-        let impactClass = 'impact-none';
-        const imp = ev.impact.toLowerCase();
-        if (imp.includes('high')) impactClass = 'impact-high';
-        else if (imp.includes('medium')) impactClass = 'impact-medium';
-        else if (imp.includes('low')) impactClass = 'impact-low';
-
-        // Date Header
-        if (ev.date !== lastDate) {
-            const dateRow = document.createElement('tr');
-            dateRow.innerHTML = `<td colspan="7" class="ff-date-header">${ev.date}</td>`;
-            tbody.appendChild(dateRow);
-            lastDate = ev.date;
-        }
-
-        const row = document.createElement('tr');
-        row.innerHTML = `
-            <td class="ff-time">${ev.time}</td>
-            <td class="ff-currency">${ev.country}</td>
-            <td><div class="impact-badge ${impactClass}" title="${ev.impact}"></div></td>
-            <td class="ff-event">${ev.title}</td>
-            <td class="ff-actual">-</td>
-            <td class="ff-forecast">${ev.forecast || '-'}</td>
-            <td class="ff-previous">${ev.previous || '-'}</td>
-        `;
-        tbody.appendChild(row);
-    });
-}
+// End of app.js

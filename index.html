@@ -19,6 +19,8 @@
     <script src="https://unpkg.com/lucide@latest"></script>
     <!-- Stylesheet -->
     <link rel="stylesheet" href="style.css">
+    <!-- FXStreet Widgets Library -->
+    <script src="https://staticcontent.fxsstatic.com/widgets-v2/stable/fxs-widgets.js" defer></script>
 </head>
 <body>
     <div class="app-container">
@@ -324,30 +326,9 @@
                             <span style="display:flex; align-items:center; gap:0.3rem;"><i data-lucide="clock" style="width:12px;height:12px;"></i> Filtered by Impact</span>
                         </div>
                     </div>
-                    <div id="calendar-events" style="min-height: 550px; overflow-x: auto;">
-                        <table class="ff-table" id="ff-calendar-table">
-                            <thead>
-                                <tr>
-                                    <th style="width: 80px;">Time</th>
-                                    <th style="width: 60px;">Cur</th>
-                                    <th style="width: 40px;">Imp</th>
-                                    <th>Event</th>
-                                    <th style="text-align: right;">Actual</th>
-                                    <th style="text-align: right;">Forecast</th>
-                                    <th style="text-align: right;">Previous</th>
-                                </tr>
-                            </thead>
-                            <tbody id="ff-calendar-body">
-                                <tr>
-                                    <td colspan="7" style="text-align: center; padding: 3rem; color: var(--text-muted);">
-                                        <div class="flex-center" style="flex-direction: column; gap: 1rem;">
-                                            <div class="spinner" style="width: 24px; height: 24px; border: 2px solid var(--border-color); border-top-color: var(--brand-blue); border-radius: 50%; animation: spin 0.8s linear infinite;"></div>
-                                            <span>Loading live news feed...</span>
-                                        </div>
-                                    </td>
-                                </tr>
-                            </tbody>
-                        </table>
+                    <div id="calendar-events" class="card" style="box-shadow: none; border: 1px solid var(--border-color); border-radius: 8px; margin-top: 1rem; min-height:600px; padding: 0;">
+                        <!-- FXStreet Economic Calendar Widget -->
+                        <div fxs-widget name="calendar"></div>
                     </div>
                 </div>
             </section>
