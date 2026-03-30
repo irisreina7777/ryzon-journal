@@ -4,6 +4,11 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>RYZON</title>
+    <!-- PWA Settings -->
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#06B6D4">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="default">
     <!-- Google Fonts: Inter -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -46,6 +51,13 @@
                 <button class="nav-btn action-btn" onclick="togglePreMarket()" style="color:var(--brand-blue);">
                     <i data-lucide="sun"></i> Pre-Market
                 </button>
+                <button class="nav-btn action-btn" onclick="exportBackupData()" style="color:#059669;">
+                    <i data-lucide="download"></i> Backup Data
+                </button>
+                <button class="nav-btn action-btn" onclick="document.getElementById('import-file').click()" style="color:#D97706;">
+                    <i data-lucide="upload"></i> Restore Data
+                </button>
+                <input type="file" id="import-file" accept=".json" style="display:none;" onchange="importBackupData(event)">
                 <button class="nav-btn action-btn text-danger" id="reset-data-btn">
                     <i data-lucide="trash-2"></i> Reset Data
                 </button>
