@@ -1181,26 +1181,44 @@ async function fetchNewsCalendar() {
 
     try {
         const response = await fetch(FF_PROXY);
-        const xmlText = await response.text();
-        const parser = new DOMParser();
-        const xmlDoc = parser.parseFromString(xmlText, "text/xml");
-        const entries = Array.from(xmlDoc.getElementsByTagName('event'));
+        if (!response.ok) throw new Error("API Limit Reached or Proxy Error");
         
-        const events = entries.map(event => ({
-            title: event.getElementsByTagName('title')[0]?.textContent,
-            country: event.getElementsByTagName('country')[0]?.textContent,
-            date: event.getElementsByTagName('date')[0]?.textContent,
-            time: event.getElementsByTagName('time')[0]?.textContent,
-            impact: event.getElementsByTagName('impact')[0]?.textContent,
-            forecast: event.getElementsByTagName('forecast')[0]?.textContent,
-            previous: event.getElementsByTagName('previous')[0]?.textContent
-        }));
+        const jsonEvents = await response.json();
+        
+        const events = jsonEvents.map(event => {
+            const d = new Date(event.date); // Parses the ISO timestamp to local timezone automatically
+            
+            // Local Date String (mm-dd-yyyy)
+            const month = String(d.getMonth() + 1).padStart(2, '0');
+            const day = String(d.getDate()).padStart(2, '0');
+            const year = d.getFullYear();
+            const localDate = `${month}-${day}-${year}`;
+            
+            // Local Time String (h:mmpm)
+            let hours = d.getHours();
+            const ampm = hours >= 12 ? 'pm' : 'am';
+            hours = hours % 12;
+            hours = hours ? hours : 12; 
+            const minutes = String(d.getMinutes()).padStart(2, '0');
+            const localTime = `${hours}:${minutes}${ampm}`;
+
+            return {
+                title: event.title,
+                country: event.country,
+                date: localDate,
+                time: localTime,
+                impact: event.impact || 'Low',
+                forecast: event.forecast,
+                previous: event.previous
+            };
+        });
 
         renderNewsTable(events);
-        document.getElementById('cal-week-label').textContent = "This Week's High Impact News";
+        const label = document.getElementById('cal-week-label');
+        if(label) label.textContent = "This Week's High Impact News";
     } catch (error) {
         console.error("News Terminal Error:", error);
-        tbody.innerHTML = `<tr><td colspan="7" style="text-align:center; padding:3rem; color:var(--danger);">Failed to load live feed. Try refreshing.</td></tr>`;
+        tbody.innerHTML = `<tr><td colspan="7" style="text-align:center; padding:3rem; color:var(--text-muted);">Could not fetch feed (Global Vercel limit reached). Please wait 5 minutes and refresh the page.</td></tr>`;
     }
 }
 

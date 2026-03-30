@@ -1,18 +1,28 @@
 export default async function handler(req, res) {
   try {
-      // Vercel serverless function fetching directly to bypass browser CORS and public proxy Cloudflare blocks
-      const response = await fetch("https://nfs.faireconomy.media/ff_calendar_thisweek.xml", {
+      // Fetching the JSON endpoint which has different rate limit triggers than XML
+      const response = await fetch("https://nfs.faireconomy.media/ff_calendar_thisweek.json", {
           headers: {
-              "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36",
-              "Accept": "text/xml,application/xml"
+              "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64)",
+              "Accept": "application/json"
           }
       });
-      const xmlData = await response.text();
-      res.setHeader("Content-Type", "text/xml");
+      const data = await response.text();
+      
+      // If we get rate limited even on JSON
+      if (data.includes('Request Denied') || data.includes('<html')) {
+          return res.status(429).json({ error: "Rate limited by upstream server. Try again shortly." });
+      }
+
+      // Tell Vercel's Edge Network to cache this result for 1 full hour (3600s)
+      // This prevents the Vercel backend from pinging Faireconomy servers too often
+      res.setHeader("Cache-Control", "s-maxage=3600, stale-while-revalidate=600");
+      res.setHeader("Content-Type", "application/json");
       res.setHeader("Access-Control-Allow-Origin", "*");
-      res.status(200).send(xmlData);
+      
+      res.status(200).send(data);
   } catch (error) {
-      console.error(error);
-      res.status(500).json({ error: "Failed to fetch original XML feed" });
+      console.error("Vercel Proxy Error:", error);
+      res.status(500).json({ error: "Failed to fetch original JSON feed" });
   }
 }
