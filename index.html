@@ -1,0 +1,633 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>RYZON</title>
+    <!-- Google Fonts: Inter -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <!-- Stylesheet -->
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="app-container">
+        <!-- Sidebar Navigation -->
+        <aside class="sidebar">
+            <div class="sidebar-logo" style="margin-bottom: 2.5rem; width: 100%; display: flex; align-items: center; justify-content: center;">
+                <img src="ryzon_logo.png" alt="RYZE" style="width: 120px; height: 120px; object-fit: contain; border-radius: 12px; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);">
+            </div>
+            <nav class="sidebar-nav">
+                <button class="nav-btn active" data-target="view-dashboard">
+                    <i data-lucide="layout-dashboard"></i> Dashboard
+                </button>
+                <button class="nav-btn" data-target="view-edge">
+                    <i data-lucide="crown"></i> Ryzon
+                </button>
+                <button class="nav-btn" data-target="view-journal">
+                    <i data-lucide="book-open"></i> Journal
+                </button>
+                <button class="nav-btn" data-target="view-notebook">
+                    <i data-lucide="notebook"></i> Notebook
+                </button>
+                <button class="nav-btn" data-target="view-calendar">
+                    <i data-lucide="calendar"></i> Calendar
+                </button>
+                <button class="nav-btn" data-target="view-calculator">
+                    <i data-lucide="calculator"></i> Calculator
+                </button>
+            </nav>
+            <div class="sidebar-bottom">
+                <button class="nav-btn action-btn" onclick="togglePreMarket()" style="color:var(--brand-blue);">
+                    <i data-lucide="sun"></i> Pre-Market
+                </button>
+                <button class="nav-btn action-btn text-danger" id="reset-data-btn">
+                    <i data-lucide="trash-2"></i> Reset Data
+                </button>
+            </div>
+        </aside>
+
+        <!-- Main Content Area -->
+        <main class="content-area">
+            
+            <!-- Dashboard View -->
+            <section id="view-dashboard" class="view-section active">
+                <header class="view-header">
+                    <h1>Dashboard</h1>
+                    <p class="subtitle">Overview of your performance and discipline.</p>
+                </header>
+
+                <div class="metric-cards">
+                    <div class="card metric">
+                        <div class="metric-icon"><i data-lucide="dollar-sign"></i></div>
+                        <div class="metric-info">
+                            <h3>Total Net PnL</h3>
+                            <p class="value" id="dash-pnl">$0.00</p>
+                        </div>
+                    </div>
+                    <div class="card metric">
+                        <div class="metric-icon"><i data-lucide="pie-chart"></i></div>
+                        <div class="metric-info">
+                            <h3>Win Rate</h3>
+                            <p class="value" id="dash-winrate">0%</p>
+                        </div>
+                    </div>
+                    <div class="card metric">
+                        <div class="metric-icon"><i data-lucide="activity"></i></div>
+                        <div class="metric-info">
+                            <h3>Profit Factor</h3>
+                            <p class="value" id="dash-pf">0.00</p>
+                        </div>
+                    </div>
+                    <div class="card metric highlight">
+                        <div class="metric-icon"><i data-lucide="brain"></i></div>
+                        <div class="metric-info">
+                            <h3>Discipline Score</h3>
+                            <p class="value" id="dash-discipline">100/100</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="dashboard-grid">
+                    <div class="card chart-container">
+                        <div class="card-header">
+                            <h3>Equity Curve</h3>
+                        </div>
+                        <canvas id="equityChart"></canvas>
+                    </div>
+
+                    <div class="card rules-container">
+                        <div class="card-header">
+                            <h3>Discipline & Rules</h3>
+                            <span class="badge badge-warning" id="dash-breaks-count">0 Breaks</span>
+                        </div>
+                        <p class="empty-state text-sm" id="rules-empty">No rules broken yet. Keep up the good work!</p>
+                        <ul class="rule-breaks-list" id="dash-rules-list">
+                            <!-- Populated via JS -->
+                        </ul>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Edge Playbook View -->
+            <section id="view-edge" class="view-section hidden">
+                <header class="view-header flex-between align-baseline mb-2">
+                    <div>
+                        <h1 class="flex-align">Ryzon <span class="text-secondary text-sm fw-normal ml-2">Build and refine your trading playbooks — your rules, biases, and edge in one place.</span></h1>
+                    </div>
+                    <button class="btn btn-ghost border text-brand btn-sm" onclick="openNewPlanModal()">
+                        <i data-lucide="plus"></i> New Plan
+                    </button>
+                </header>
+
+                <div class="edge-layout" style="display: flex; gap: 2rem; align-items: flex-start;">
+                    <!-- Plans Sidebar -->
+                    <aside class="edge-sidebar" style="width: 230px; flex-shrink: 0;">
+                        <h3 class="text-xs text-muted uppercase fw-medium mb-3 pl-2">My Plans</h3>
+                        <div class="plan-list" id="plan-list"></div>
+                    </aside>
+
+                    <!-- Plan Editor -->
+                    <div class="edge-container card px-8 py-6" style="flex: 1; margin: 0; max-width: none;" id="edge-editor">
+                        <!-- Populated by JS -->
+                    </div>
+                </div>
+            </section>
+
+            <!-- Risk Controls Edit Modal -->
+            <div class="modal-overlay hidden" id="risk-modal">
+                <div class="modal-content card" style="max-width: 480px;">
+                    <header class="modal-header">
+                        <h2>Edit Risk Controls</h2>
+                        <button class="btn-icon" id="close-risk-modal"><i data-lucide="x"></i></button>
+                    </header>
+                    <div class="modal-body">
+                        <div class="form-row">
+                            <div class="form-group half">
+                                <label>Max Trades/Day</label>
+                                <input type="number" id="rc-max-trades" class="input-field" min="1" max="20">
+                            </div>
+                            <div class="form-group half">
+                                <label>Risk Per Trade (%)</label>
+                                <input type="number" id="rc-risk-pct" class="input-field" step="0.1" min="0.1" max="10">
+                            </div>
+                        </div>
+                        <div class="form-row">
+                            <div class="form-group half">
+                                <label>Max Daily Loss ($)</label>
+                                <input type="number" id="rc-max-loss" class="input-field" step="10">
+                            </div>
+                            <div class="form-group half">
+                                <label>Max Daily Profit ($)</label>
+                                <input type="number" id="rc-max-profit" class="input-field" step="10">
+                            </div>
+                        </div>
+                        <div class="modal-footer mt-4 flex-end">
+                            <button type="button" class="btn btn-ghost" id="cancel-risk-modal">Cancel</button>
+                            <button type="button" class="btn btn-primary" id="save-risk-controls">Save</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- New Plan Modal -->
+            <div class="modal-overlay hidden" id="new-plan-modal">
+                <div class="modal-content card" style="max-width: 440px;">
+                    <header class="modal-header">
+                        <h2>Create New Plan</h2>
+                        <button class="btn-icon" onclick="closeNewPlanModal()"><i data-lucide="x"></i></button>
+                    </header>
+                    <div class="modal-body">
+                        <div class="form-group">
+                            <label for="new-plan-name">Plan Name</label>
+                            <input type="text" id="new-plan-name" class="input-field" placeholder="e.g. London Session, Weekly Range..." autocomplete="off">
+                        </div>
+                        <div class="form-group mt-2">
+                            <label for="new-plan-type">Plan Type</label>
+                            <select id="new-plan-type" class="input-field">
+                                <option value="Daily">Daily Bias</option>
+                                <option value="Session">Session Play</option>
+                                <option value="Weekly">Weekly Range</option>
+                                <option value="Swing">Swing Trade</option>
+                                <option value="Custom">Custom</option>
+                            </select>
+                        </div>
+                        <div class="modal-footer mt-4 flex-end">
+                            <button type="button" class="btn btn-ghost" onclick="closeNewPlanModal()">Cancel</button>
+                            <button type="button" class="btn btn-primary" onclick="createNewPlan()">Create Plan</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Journal View -->
+            <section id="view-journal" class="view-section hidden">
+                <header class="view-header flex-between">
+                    <div>
+                        <h1>Trade Journal</h1>
+                        <p class="subtitle">Log your trades, emotions, and lessons.</p>
+                    </div>
+                    <button id="add-trade-btn" class="btn btn-primary">
+                        <i data-lucide="plus"></i> Log Trade
+                    </button>
+                </header>
+
+                <div class="card table-card">
+                    <div class="table-responsive">
+                        <table class="data-table">
+                            <thead>
+                                <tr>
+                                    <th>Date</th>
+                                    <th>Asset</th>
+                                    <th>Direction</th>
+                                    <th>Result</th>
+                                    <th>Emotions</th>
+                                    <th>Notes</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="journal-tbody">
+                                <!-- Populated dynamically -->
+                            </tbody>
+                        </table>
+                    </div>
+                    <div id="journal-empty" class="empty-state p-6 text-center hidden">
+                        <i data-lucide="book" class="icon-xl text-muted mx-auto mb-2"></i>
+                        <h3>No trades logged yet</h3>
+                        <p class="text-sm">Click "Log Trade" to add your first entry.</p>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Notebook View -->
+            <section id="view-notebook" class="view-section hidden">
+                <header class="view-header flex-between mb-4">
+                    <div>
+                        <h1>Notebook</h1>
+                        <p class="subtitle">Capture your insights, research, and trade reviews.</p>
+                    </div>
+                    <button class="btn btn-primary" onclick="addNote()"><i data-lucide="plus"></i> New Note</button>
+                </header>
+                <div style="display:grid; grid-template-columns:260px 1fr; gap:1.5rem; min-height:500px;">
+                    <!-- Note List -->
+                    <div class="card" style="padding:1rem;">
+                        <div style="display:flex; gap:0.5rem; margin-bottom:1rem;">
+                            <input type="text" id="note-search" class="input-field" placeholder="Search notes..." oninput="renderNoteList()" style="flex:1;">
+                        </div>
+                        <div id="note-list" style="display:flex; flex-direction:column; gap:0.25rem;"></div>
+                    </div>
+                    <!-- Note Editor -->
+                    <div class="card" style="padding:1.5rem; display:flex; flex-direction:column;" id="note-editor-container">
+                        <div id="note-editor-empty" style="display:flex; flex-direction:column; align-items:center; justify-content:center; flex:1; color:var(--text-muted);">
+                            <i data-lucide="notebook" style="width:40px;height:40px;margin-bottom:1rem;opacity:0.3;"></i>
+                            <p>Select a note or create a new one</p>
+                        </div>
+                        <div id="note-editor" style="display:none; flex-direction:column; flex:1;">
+                            <input type="text" id="note-title-input" class="input-field" placeholder="Note title..." style="font-size:1.1rem; font-weight:600; margin-bottom:1rem; border:none; border-bottom:2px solid var(--border-color); border-radius:0; padding-left:0;" oninput="saveActiveNote()">
+                            <div style="display:flex; gap:0.5rem; margin-bottom:1rem; flex-wrap:wrap;">
+                                <span style="font-size:0.75rem; color:var(--text-muted);">Template:</span>
+                                <button class="add-row-btn" onclick="applyTemplate('trade-review')">Trade Review</button>
+                                <button class="add-row-btn" onclick="applyTemplate('weekly-plan')">Weekly Plan</button>
+                                <button class="add-row-btn" onclick="applyTemplate('lesson')">Lesson Learned</button>
+                            </div>
+                            <textarea id="note-body-input" class="input-field text-area" style="flex:1; min-height:320px; resize:none; font-size:0.875rem; line-height:1.75;" placeholder="Start writing..." oninput="saveActiveNote()"></textarea>
+                            <div style="display:flex; justify-content:space-between; align-items:center; margin-top:1rem;">
+                                <span id="note-saved-indicator" style="font-size:0.75rem; color:var(--text-muted);"></span>
+                                <button class="btn btn-ghost border text-danger btn-sm" onclick="deleteActiveNote()"><i data-lucide="trash-2" style="width:13px;height:13px;"></i> Delete</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Economic Calendar View -->
+            <section id="view-calendar" class="view-section hidden">
+                <header class="view-header mb-4">
+                    <div>
+                        <h1>Economic Calendar</h1>
+                        <p class="subtitle">Live market-moving news events and professional volatility forecasts.</p>
+                    </div>
+                    <div style="display:flex; align-items:center; gap:0.5rem; background:#ECFEFF; padding:4px 10px; border-radius:4px; border:1px solid #A5F3FC;">
+                        <span class="status-dot" style="width:6px; height:6px; background:#06B6D4; border-radius:50%;"></span>
+                        <span style="font-size:0.65rem; font-weight:700; color:#06B6D4; text-transform:uppercase; letter-spacing:0.025em;">Live Terminal</span>
+                    </div>
+                </header>
+                <div class="card" style="padding: 0; border: 1px solid var(--border-color); overflow: hidden; background: #fff;">
+                    <div id="calendar-header-bar" style="background: #06B6D4; color: white; padding: 0.5rem 1rem; font-size: 0.75rem; font-weight: 700; display: flex; justify-content: space-between; align-items: center;">
+                        <span id="cal-week-label">This Week</span>
+                        <div style="display:flex; gap:1rem; font-size:0.7rem;">
+                            <span style="display:flex; align-items:center; gap:0.3rem;"><i data-lucide="clock" style="width:12px;height:12px;"></i> Filtered by Impact</span>
+                        </div>
+                    </div>
+                    <div id="calendar-events" style="min-height: 550px;">
+                        <!-- TradingView Widget BEGIN -->
+                        <div class="tradingview-widget-container" style="width: 100%; height: 550px;">
+                            <div class="tradingview-widget-container__widget"></div>
+                            <script type="text/javascript" src="https://s3.tradingview.com/external-embedding/embed-widget-events.js" async>
+                            {
+                                "width": "100%",
+                                "height": "550",
+                                "colorTheme": "light",
+                                "isTransparent": true,
+                                "locale": "en",
+                                "importanceFilter": "0,1",
+                                "currencyFilter": "USD,EUR,GBP,JPY,CAD,AUD,NZD,CHF"
+                            }
+                            </script>
+                        </div>
+                        <!-- TradingView Widget END -->
+                    </div>
+                </div>
+            </section>
+
+            <!-- Lot Size Calculator View -->
+            <section id="view-calculator" class="view-section hidden">
+                <header class="view-header mb-4">
+                    <h1>Position Calculator</h1>
+                    <p class="subtitle">Calculate exact position sizes for Forex, Gold, and Futures markets.</p>
+                </header>
+                <!-- Tab Switcher -->
+                <div style="display:flex; gap:0; margin-bottom:1.5rem; border:1px solid var(--border-color); border-radius:0.5rem; padding:3px; background:#F9FAFB; width:fit-content;">
+                    <button id="tab-forex" onclick="switchCalcTab('forex')" style="padding:0.5rem 1.25rem; border-radius:0.375rem; border:none; cursor:pointer; font-size:0.875rem; font-weight:500; background:white; color:var(--text-primary); box-shadow:0 1px 3px rgba(0,0,0,0.1); transition:all 0.15s;">🌍 Forex / Gold</button>
+                    <button id="tab-futures" onclick="switchCalcTab('futures')" style="padding:0.5rem 1.25rem; border-radius:0.375rem; border:none; cursor:pointer; font-size:0.875rem; font-weight:500; background:transparent; color:var(--text-muted); transition:all 0.15s;">📈 Futures</button>
+                </div>
+
+                <!-- Forex / Gold Panel -->
+                <div id="panel-forex" style="display:grid; grid-template-columns:1fr 1fr; gap:1.5rem; max-width:900px;">
+                    <!-- Inputs -->
+                    <div class="card" style="padding:1.5rem;">
+                        <h3 style="margin-bottom:1.25rem;">Trade Parameters</h3>
+                        <div class="form-group">
+                            <label>Account Balance ($)</label>
+                            <input type="number" id="calc-balance" class="input-field" value="10000" oninput="calcLotSize()">
+                        </div>
+                        <div class="form-group mt-3">
+                            <label>Risk Per Trade (%)</label>
+                            <input type="number" id="calc-risk" class="input-field" value="1" step="0.1" oninput="calcLotSize()">
+                        </div>
+                        <div class="form-group mt-3">
+                            <label>Stop Loss (Pips)</label>
+                            <input type="number" id="calc-sl-pips" class="input-field" value="20" oninput="calcLotSize()">
+                        </div>
+                        <div class="form-group mt-3">
+                            <label>Instrument Type</label>
+                            <select id="calc-instrument" class="input-field" onchange="calcLotSize()">
+                                <option value="forex-major">Forex Major (e.g. EURUSD)</option>
+                                <option value="forex-jpy">Forex JPY Pair (e.g. USDJPY)</option>
+                                <option value="gold">Gold (XAUUSD)</option>
+                                <option value="indices">Indices (e.g. US30)</option>
+                            </select>
+                        </div>
+                        <div class="form-group mt-3">
+                            <label>Account Currency</label>
+                            <select id="calc-currency" class="input-field" onchange="calcLotSize()">
+                                <option value="USD">USD</option>
+                                <option value="EUR">EUR</option>
+                                <option value="GBP">GBP</option>
+                                <option value="SGD">SGD</option>
+                            </select>
+                        </div>
+                    </div>
+                    <!-- Results -->
+                    <div style="display:flex; flex-direction:column; gap:1rem;">
+                        <div class="card" style="padding:1.5rem; background:linear-gradient(135deg,#1e3a8a,#2563EB); color:white;">
+                            <p style="font-size:0.75rem; opacity:0.8; margin-bottom:0.5rem; text-transform:uppercase; letter-spacing:0.05em;">Recommended Lot Size</p>
+                            <p id="calc-result-lots" style="font-size:2.5rem; font-weight:700; letter-spacing:-0.02em;">0.05</p>
+                            <p style="font-size:0.875rem; opacity:0.7;">Standard Lots</p>
+                        </div>
+                        <div class="card" style="padding:1.25rem;">
+                            <div style="display:grid; grid-template-columns:1fr 1fr; gap:1rem;">
+                                <div><p id="calc-result-risk-usd" style="font-size:1.25rem; font-weight:700;">$100</p><p style="font-size:0.75rem; color:var(--text-muted); margin-top:2px;">Risk Amount</p></div>
+                                <div><p id="calc-result-pip-val" style="font-size:1.25rem; font-weight:700;">$1.00</p><p style="font-size:0.75rem; color:var(--text-muted); margin-top:2px;">Pip Value</p></div>
+                                <div><p id="calc-result-mini" style="font-size:1.25rem; font-weight:700;">0.50</p><p style="font-size:0.75rem; color:var(--text-muted); margin-top:2px;">Mini Lots</p></div>
+                                <div><p id="calc-result-micro" style="font-size:1.25rem; font-weight:700;">5.0</p><p style="font-size:0.75rem; color:var(--text-muted); margin-top:2px;">Micro Lots</p></div>
+                            </div>
+                        </div>
+                        <div class="card" style="padding:1.25rem; background:#FFFBEB; border-color:#FDE68A;">
+                            <p style="font-size:0.75rem; font-weight:600; color:#92400E; margin-bottom:0.5rem;">⚠️ Risk Summary</p>
+                            <p id="calc-risk-summary" style="font-size:0.8rem; color:#78350F; line-height:1.6;">You are risking $100 on this trade (1.0% of account). Your SL is 20 pips wide.</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Futures Panel -->
+                <div id="panel-futures" style="display:none; max-width:980px;">
+                    <div style="display:grid; grid-template-columns:1fr 1fr; gap:1.5rem;">
+                        <!-- Inputs -->
+                        <div class="card" style="padding:1.5rem;">
+                            <h3 style="margin-bottom:1.25rem;">Futures Parameters</h3>
+                            <div class="form-group">
+                                <label>Account Balance ($)</label>
+                                <input type="number" id="fut-balance" class="input-field" value="25000" oninput="calcFutures()">
+                            </div>
+                            <div class="form-group mt-3">
+                                <label>Risk Per Trade (%)</label>
+                                <input type="number" id="fut-risk" class="input-field" value="1" step="0.1" min="0.1" oninput="calcFutures()">
+                            </div>
+                            <div class="form-group mt-3">
+                                <label>Stop Loss (Ticks)</label>
+                                <input type="number" id="fut-sl-ticks" class="input-field" value="8" min="1" oninput="calcFutures()">
+                            </div>
+                            <div class="form-group mt-3">
+                                <label>Futures Instrument</label>
+                                <select id="fut-instrument" class="input-field" onchange="onFuturesInstrumentChange()">
+                                    <optgroup label="Equity Index">
+                                        <option value="ES">ES — S&amp;P 500 (Standard)</option>
+                                        <option value="MES">MES — Micro S&amp;P 500</option>
+                                        <option value="NQ">NQ — Nasdaq 100 (Standard)</option>
+                                        <option value="MNQ">MNQ — Micro Nasdaq 100</option>
+                                        <option value="YM">YM — Dow Jones (Standard)</option>
+                                        <option value="MYM">MYM — Micro Dow Jones</option>
+                                        <option value="RTY">RTY — Russell 2000</option>
+                                        <option value="M2K">M2K — Micro Russell 2000</option>
+                                    </optgroup>
+                                    <optgroup label="Energy">
+                                        <option value="CL">CL — Crude Oil (WTI)</option>
+                                        <option value="MCL">MCL — Micro Crude Oil</option>
+                                        <option value="NG">NG — Natural Gas</option>
+                                    </optgroup>
+                                    <optgroup label="Metals">
+                                        <option value="GC">GC — Gold (Standard)</option>
+                                        <option value="MGC">MGC — Micro Gold</option>
+                                        <option value="SI">SI — Silver (Standard)</option>
+                                        <option value="SIL">SIL — Micro Silver</option>
+                                    </optgroup>
+                                    <optgroup label="Interest Rates">
+                                        <option value="ZB">ZB — 30-Year T-Bond</option>
+                                        <option value="ZN">ZN — 10-Year T-Note</option>
+                                        <option value="ZF">ZF — 5-Year T-Note</option>
+                                    </optgroup>
+                                    <optgroup label="FX Futures">
+                                        <option value="6E">6E — Euro FX</option>
+                                        <option value="6J">6J — Japanese Yen</option>
+                                        <option value="6B">6B — British Pound</option>
+                                        <option value="6A">6A — Australian Dollar</option>
+                                    </optgroup>
+                                    <optgroup label="Custom">
+                                        <option value="CUSTOM">Custom Instrument</option>
+                                    </optgroup>
+                                </select>
+                            </div>
+                            <!-- Custom fields -->
+                            <div id="fut-custom-fields" style="display:none; margin-top:1rem;">
+                                <div style="background:#F0F4FF; border-radius:0.5rem; padding:0.875rem; border:1px solid #C7D2FE;">
+                                    <p style="font-size:0.75rem; font-weight:600; color:var(--brand-blue); margin-bottom:0.75rem;">Custom Contract Specs</p>
+                                    <div style="display:grid; grid-template-columns:1fr 1fr; gap:0.75rem;">
+                                        <div><label style="font-size:0.75rem;">Tick Size</label><input type="number" id="fut-custom-tick-size" class="input-field" value="0.25" step="0.01" oninput="calcFutures()"></div>
+                                        <div><label style="font-size:0.75rem;">Tick Value ($)</label><input type="number" id="fut-custom-tick-val" class="input-field" value="12.50" step="0.01" oninput="calcFutures()"></div>
+                                    </div>
+                                </div>
+                            </div>
+                            <!-- Instrument info -->
+                            <div id="fut-instrument-info" style="margin-top:1rem; padding:0.75rem; background:#F0FDF4; border:1px solid #86EFAC; border-radius:0.5rem;">
+                                <p id="fut-info-text" style="font-size:0.78rem; color:#15803D; line-height:1.6;"></p>
+                            </div>
+                        </div>
+
+                        <!-- Results -->
+                        <div style="display:flex; flex-direction:column; gap:1rem;">
+                            <div class="card" style="padding:1.5rem; background:linear-gradient(135deg,#134e4a,#0D9488); color:white;">
+                                <p style="font-size:0.7rem; opacity:0.8; margin-bottom:0.25rem; text-transform:uppercase; letter-spacing:0.06em;">Contracts to Trade</p>
+                                <p id="fut-result-contracts" style="font-size:3rem; font-weight:700; letter-spacing:-0.03em; line-height:1;">1</p>
+                                <p style="font-size:0.85rem; opacity:0.7; margin-top:0.25rem;" id="fut-result-subtitle">ES Contract(s)</p>
+                            </div>
+                            <div class="card" style="padding:1.25rem;">
+                                <div style="display:grid; grid-template-columns:1fr 1fr; gap:1rem;">
+                                    <div><p id="fut-result-risk-usd" style="font-size:1.25rem; font-weight:700;">$250</p><p style="font-size:0.75rem; color:var(--text-muted); margin-top:2px;">Dollar Risk</p></div>
+                                    <div><p id="fut-result-tick-val" style="font-size:1.25rem; font-weight:700;">$12.50</p><p style="font-size:0.75rem; color:var(--text-muted); margin-top:2px;">Tick Value</p></div>
+                                    <div><p id="fut-result-risk-per-contract" style="font-size:1.25rem; font-weight:700;">$100</p><p style="font-size:0.75rem; color:var(--text-muted); margin-top:2px;">Risk / Contract</p></div>
+                                    <div><p id="fut-result-notional" style="font-size:1.25rem; font-weight:700;">$210,000</p><p style="font-size:0.75rem; color:var(--text-muted); margin-top:2px;">Notional Value</p></div>
+                                </div>
+                            </div>
+                            <!-- RR Table -->
+                            <div class="card" style="padding:1.25rem;">
+                                <p style="font-size:0.75rem; font-weight:600; color:var(--text-secondary); margin-bottom:0.75rem; text-transform:uppercase; letter-spacing:0.05em;">Reward Targets</p>
+                                <div style="display:grid; grid-template-columns:1fr 1fr 1fr; gap:0.625rem; text-align:center;">
+                                    <div style="background:#F0FDF4; border-radius:0.5rem; padding:0.625rem;">
+                                        <p style="font-size:0.65rem; color:#16A34A; font-weight:600; margin-bottom:2px;">1:1 RR</p>
+                                        <p id="fut-rr-1" style="font-size:0.9rem; font-weight:700; color:#15803D;">$100</p>
+                                    </div>
+                                    <div style="background:#DBEAFE; border-radius:0.5rem; padding:0.625rem;">
+                                        <p style="font-size:0.65rem; color:#1D4ED8; font-weight:600; margin-bottom:2px;">2:1 RR</p>
+                                        <p id="fut-rr-2" style="font-size:0.9rem; font-weight:700; color:#1D4ED8;">$200</p>
+                                    </div>
+                                    <div style="background:#EFF6FF; border-radius:0.5rem; padding:0.625rem;">
+                                        <p style="font-size:0.65rem; color:var(--brand-blue); font-weight:600; margin-bottom:2px;">3:1 RR</p>
+                                        <p id="fut-rr-3" style="font-size:0.9rem; font-weight:700; color:var(--brand-blue);">$300</p>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="card" style="padding:1.25rem; background:#FFFBEB; border-color:#FDE68A;">
+                                <p style="font-size:0.75rem; font-weight:600; color:#92400E; margin-bottom:0.4rem;">⚠️ Risk Summary</p>
+                                <p id="fut-risk-summary" style="font-size:0.8rem; color:#78350F; line-height:1.6;">–</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Reference Table -->
+                    <div class="card" style="margin-top:1.5rem; overflow:hidden;">
+                        <div class="card-header">
+                            <h3>Common Futures Contract Specs</h3>
+                            <span style="font-size:0.75rem; color:var(--text-muted);">CME Group reference guide</span>
+                        </div>
+                        <div style="overflow-x:auto;">
+                            <table class="data-table">
+                                <thead>
+                                    <tr><th>Symbol</th><th>Name</th><th>Tick Size</th><th>Tick Value</th><th>Margin (Est.)</th><th>Exchange</th></tr>
+                                </thead>
+                                <tbody>
+                                    <tr><td><strong>ES</strong></td><td>S&amp;P 500 Futures</td><td>0.25 pts</td><td>$12.50</td><td>~$12,000</td><td>CME</td></tr>
+                                    <tr><td><strong>MES</strong></td><td>Micro S&amp;P 500</td><td>0.25 pts</td><td>$1.25</td><td>~$1,200</td><td>CME</td></tr>
+                                    <tr><td><strong>NQ</strong></td><td>Nasdaq 100 Futures</td><td>0.25 pts</td><td>$5.00</td><td>~$20,000</td><td>CME</td></tr>
+                                    <tr><td><strong>MNQ</strong></td><td>Micro Nasdaq 100</td><td>0.25 pts</td><td>$0.50</td><td>~$2,000</td><td>CME</td></tr>
+                                    <tr><td><strong>YM</strong></td><td>Dow Jones Futures</td><td>1 pt</td><td>$5.00</td><td>~$8,000</td><td>CBOT</td></tr>
+                                    <tr><td><strong>MYM</strong></td><td>Micro Dow Jones</td><td>1 pt</td><td>$0.50</td><td>~$800</td><td>CBOT</td></tr>
+                                    <tr><td><strong>CL</strong></td><td>Crude Oil (WTI)</td><td>$0.01/bbl</td><td>$10.00</td><td>~$6,000</td><td>NYMEX</td></tr>
+                                    <tr><td><strong>MCL</strong></td><td>Micro Crude Oil</td><td>$0.01/bbl</td><td>$1.00</td><td>~$600</td><td>NYMEX</td></tr>
+                                    <tr><td><strong>GC</strong></td><td>Gold Futures</td><td>$0.10/oz</td><td>$10.00</td><td>~$11,000</td><td>COMEX</td></tr>
+                                    <tr><td><strong>MGC</strong></td><td>Micro Gold</td><td>$0.10/oz</td><td>$1.00</td><td>~$1,100</td><td>COMEX</td></tr>
+                                    <tr><td><strong>ZB</strong></td><td>30-Year T-Bond</td><td>1/32 pt</td><td>$31.25</td><td>~$5,000</td><td>CBOT</td></tr>
+                                    <tr><td><strong>6E</strong></td><td>Euro FX Futures</td><td>0.00005</td><td>$6.25</td><td>~$2,800</td><td>CME</td></tr>
+                                    <tr><td><strong>6J</strong></td><td>Japanese Yen</td><td>0.0000005</td><td>$6.25</td><td>~$2,800</td><td>CME</td></tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+        </main>
+    </div>
+
+    <!-- Pre-Market Routine Widget (Floating) -->
+    <div id="premarket-widget" style="display:none; position:fixed; right:1.5rem; bottom:1.5rem; width:340px; z-index:1000; box-shadow:var(--shadow-lg); border-radius:0.75rem; background:#fff; border:1px solid var(--border-color); overflow:hidden;">
+        <div style="background:linear-gradient(135deg,var(--brand-blue),#2563EB); padding:1rem 1.25rem; display:flex; justify-content:space-between; align-items:center;">
+            <div style="color:white;">
+                <p style="font-size:0.65rem; opacity:0.8; text-transform:uppercase; letter-spacing:0.06em;">Pre-Market Routine</p>
+                <p style="font-weight:600; font-size:0.95rem;">Morning Checklist</p>
+            </div>
+            <button onclick="togglePreMarket()" style="background:rgba(255,255,255,0.2); border:none; border-radius:50%; width:28px; height:28px; cursor:pointer; color:white; display:flex; align-items:center; justify-content:center;">
+                <i data-lucide="x" style="width:14px;height:14px;"></i>
+            </button>
+        </div>
+        <div style="padding:1rem 1.25rem;">
+            <div id="premarket-list" style="display:flex; flex-direction:column; gap:0.5rem;"></div>
+            <div style="margin-top:1rem; padding-top:1rem; border-top:1px solid var(--border-color); display:flex; justify-content:space-between; align-items:center;">
+                <span id="premarket-progress" style="font-size:0.75rem; color:var(--text-muted);">0 / 7 complete</span>
+                <button onclick="resetPreMarket()" class="add-row-btn">Reset</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Add Trade Modal -->
+    <div class="modal-overlay hidden" id="trade-modal">
+        <div class="modal-content card">
+            <header class="modal-header">
+                <h2>Log New Trade</h2>
+                <button class="btn-icon" id="close-modal-btn"><i data-lucide="x"></i></button>
+            </header>
+            <div class="modal-body">
+                <form id="trade-form">
+                    <div class="form-row">
+                        <div class="form-group half">
+                            <label for="trade-asset">Asset</label>
+                            <input type="text" id="trade-asset" class="input-field" placeholder="e.g. EURUSD, AAPL" required>
+                        </div>
+                        <div class="form-group half">
+                            <label for="trade-direction">Direction</label>
+                            <select id="trade-direction" class="input-field" required>
+                                <option value="Long">Long</option>
+                                <option value="Short">Short</option>
+                            </select>
+                        </div>
+                    </div>
+                    
+                    <div class="form-row">
+                        <div class="form-group half">
+                            <label for="trade-pnl" class="flex-between">Net PnL ($) <span class="text-muted text-xs">Required</span></label>
+                            <input type="number" id="trade-pnl" class="input-field" step="0.01" placeholder="e.g. 150.50 or -50.00" required>
+                        </div>
+                        <div class="form-group half">
+                            <label for="trade-discipline">Did you follow your plan?</label>
+                            <select id="trade-discipline" class="input-field">
+                                <option value="Yes">Yes, strict adherence</option>
+                                <option value="No">No, broke rules</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="form-group mt-2">
+                        <label>Emotions & State</label>
+                        <div class="emotion-tags" id="emotion-selector">
+                            <span class="tag selectable" data-emotion="FOMO">FOMO</span>
+                            <span class="tag selectable" data-emotion="Greed">Greed</span>
+                            <span class="tag selectable" data-emotion="Fear">Fear</span>
+                            <span class="tag selectable" data-emotion="Revenge">Revenge</span>
+                            <span class="tag selectable" data-emotion="Flow State">Flow State</span>
+                            <span class="tag selectable" data-emotion="Confident">Confident</span>
+                            <span class="tag selectable" data-emotion="Bored">Bored</span>
+                        </div>
+                    </div>
+
+                    <div class="form-group mt-2">
+                        <label for="trade-notes">Notes & Lessons</label>
+                        <textarea id="trade-notes" class="input-field text-area" rows="4" placeholder="Why did you take this trade? What did you do well? What can be improved?"></textarea>
+                    </div>
+
+                    <div class="modal-footer mt-4 flex-end">
+                        <button type="button" class="btn btn-ghost" id="cancel-modal-btn">Cancel</button>
+                        <button type="submit" class="btn btn-primary">Save Trade</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <script src="app.js"></script>
+</body>
+</html>
