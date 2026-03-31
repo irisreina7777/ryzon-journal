@@ -172,6 +172,10 @@ navBtns.forEach(btn => {
         });
         if (targetId === 'view-dashboard') renderChart();
         if (targetId === 'view-edge') renderEdge();
+        if (targetId === 'view-calendar') {
+            // Signal widgets to re-render using a resize event
+            setTimeout(() => window.dispatchEvent(new Event('resize')), 50);
+        }
     });
 });
 

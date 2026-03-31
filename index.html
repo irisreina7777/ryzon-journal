@@ -13,10 +13,10 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-    <!-- Chart.js -->
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <!-- Lucide Icons -->
     <script src="https://unpkg.com/lucide@latest"></script>
+    <!-- FXStreet Widgets Library (Live Terminal Engine - Early Load) -->
+    <script src="https://staticcontent.fxsstatic.com/widgets-v2/stable/fxs-widgets.js" type="text/javascript"></script>
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
@@ -317,8 +317,8 @@
                     </div>
                 </header>
                     <div id="calendar-events-container" class="card" style="box-shadow: none; border: 1px solid var(--border-color); border-radius: 12px; min-height: 850px; padding: 0; background: #fff; overflow: visible;">
-                        <!-- FXStreet Economic Calendar Widget -->
-                        <div fxs-widget="calendar"></div>
+                        <!-- FXStreet Economic Calendar Widget (Direct Connect) -->
+                        <div fxs-widget="calendar" fxs-culture="en-US" fxs-timezone="UTC"></div>
                     </div>
             </section>
 
@@ -626,7 +626,5 @@
     </div>
 
     <script src="app.js"></script>
-    <!-- FXStreet Widgets Library (Live Terminal Engine) -->
-    <script src="https://staticcontent.fxsstatic.com/widgets-v2/stable/fxs-widgets.js" defer></script>
 </body>
 </html>
