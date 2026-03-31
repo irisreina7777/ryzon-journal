@@ -202,6 +202,15 @@ h3 {
     margin-bottom: 2rem;
 }
 
+/* Calendar iframe - desktop default */
+#calendar-iframe {
+    height: 850px;
+}
+#calendar-events-container {
+    border-radius: 12px;
+    overflow: hidden;
+}
+
 /* Cards */
 .card {
     background: var(--bg-card);
@@ -725,6 +734,18 @@ label {
     .edge-sidebar { width: 100%; }
     .notebook-layout { grid-template-columns: 1fr; }
     .calc-panel { grid-template-columns: 1fr !important; }
+
+    /* --- Calendar iframe responsive --- */
+    #calendar-events-container {
+        margin: 0 -1rem;
+        border-radius: 0 !important;
+        border-left: none !important;
+        border-right: none !important;
+    }
+    #calendar-iframe {
+        height: calc(100vh - 160px);
+        min-height: 500px;
+    }
 }
 
 @media (max-width: 400px) {

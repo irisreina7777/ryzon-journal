@@ -306,20 +306,22 @@
 
             <!-- Economic Calendar View -->
             <section id="view-calendar" class="view-section hidden">
-                <header class="view-header mb-4">
-                    <div>
-                        <h1>Economic Calendar</h1>
-                        <p class="subtitle">Live market-moving news events and professional volatility forecasts.</p>
-                    </div>
-                    <div style="display:flex; align-items:center; gap:0.5rem; background:#ECFEFF; padding:4px 10px; border-radius:4px; border:1px solid #A5F3FC;">
-                        <span class="status-dot" style="width:6px; height:6px; background:#06B6D4; border-radius:50%;"></span>
-                        <span style="font-size:0.65rem; font-weight:700; color:#06B6D4; text-transform:uppercase; letter-spacing:0.025em;">Live Terminal</span>
+                <header class="view-header" style="margin-bottom: 1rem;">
+                    <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:0.5rem;">
+                        <div>
+                            <h1 style="margin:0;">Economic Calendar</h1>
+                            <p class="subtitle" style="margin:0.25rem 0 0;">Live market-moving events &amp; data releases.</p>
+                        </div>
+                        <div style="display:flex; align-items:center; gap:0.4rem; background:#ECFEFF; padding:3px 8px; border-radius:4px; border:1px solid #A5F3FC; flex-shrink:0;">
+                            <span style="width:6px; height:6px; background:#06B6D4; border-radius:50%; display:inline-block;"></span>
+                            <span style="font-size:0.6rem; font-weight:700; color:#06B6D4; text-transform:uppercase; letter-spacing:0.025em;">Live Data</span>
+                        </div>
                     </div>
                 </header>
-                    <div id="calendar-events-container" class="card" style="box-shadow: none; border: 1px solid var(--border-color); border-radius: 12px; min-height: 850px; padding: 0; background: #fff; overflow: hidden;">
-                        <!-- Investing.com Economic Calendar (Free, No Auth Required) -->
-                        <iframe src="https://sslecal2.investing.com?columns=exc_flags,exc_currency,exc_importance,exc_actual,exc_forecast,exc_previous&features=datepicker,timezone&countries=5,4,72,22,17,25,32,36,37&calType=week&timeZone=55&lang=1" width="100%" height="850" frameborder="0" allowtransparency="true" style="border:none; display:block;"></iframe>
-                    </div>
+                <div id="calendar-events-container" style="border: 1px solid var(--border-color); border-radius: 12px; background: #fff; overflow: hidden;">
+                    <!-- Investing.com Economic Calendar (Free, No Auth Required) -->
+                    <iframe id="calendar-iframe" src="https://sslecal2.investing.com?columns=exc_flags,exc_currency,exc_importance,exc_actual,exc_forecast,exc_previous&features=datepicker,timezone&countries=5,4,72,22,17,25,32,36,37&calType=week&timeZone=55&lang=1" width="100%" frameborder="0" allowtransparency="true" style="border:none; display:block; min-height:600px;"></iframe>
+                </div>
             </section>
 
             <!-- Lot Size Calculator View -->
