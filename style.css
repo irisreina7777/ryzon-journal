@@ -816,8 +816,8 @@ label {
         border-right: none !important;
     }
     #calendar-iframe {
-        height: calc(100vh - 280px);
-        min-height: 450px;
+        height: 600px !important;
+        min-height: 600px !important;
     }
 }
 
