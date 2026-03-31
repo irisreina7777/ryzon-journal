@@ -17,8 +17,6 @@
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <!-- Lucide Icons -->
     <script src="https://unpkg.com/lucide@latest"></script>
-    <!-- FXStreet Widgets Library (Live Terminal Engine - Early Load) -->
-    <script src="https://staticcontent.fxsstatic.com/widgets-v2/stable/fxs-widgets.js" type="text/javascript"></script>
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
@@ -319,21 +317,8 @@
                     </div>
                 </header>
                     <div id="calendar-events-container" class="card" style="box-shadow: none; border: 1px solid var(--border-color); border-radius: 12px; min-height: 850px; padding: 0.5rem; background: #fff; overflow: visible;">
-                        <!-- TradingView Economic Calendar Widget (Ultimate Reliability) -->
-                        <div class="tradingview-widget-container" style="width: 100%; height: 800px;">
-                            <div class="tradingview-widget-container__widget"></div>
-                            <script type="text/javascript" src="https://s3.tradingview.com/external-embedding/embed-widget-events.js" async>
-                            {
-                                "colorTheme": "light",
-                                "isMaximized": true,
-                                "width": "100%",
-                                "height": "100%",
-                                "locale": "en",
-                                "importanceFilter": "-1,0,1",
-                                "currencyFilter": "USD,EUR,GBP,JPY,AUD,CAD,CHF,NZD"
-                            }
-                            </script>
-                        </div>
+                        <!-- FXStreet Economic Calendar Widget v2 (Official Syntax) -->
+                        <div fxs-widget name="calendar" culture="en" timezone-offset="0"></div>
                     </div>
             </section>
 
@@ -641,5 +626,7 @@
     </div>
 
     <script src="app.js"></script>
+    <!-- FXStreet Widgets Library (must load AFTER DOM is ready, per official docs) -->
+    <script src="https://staticcontent.fxsstatic.com/widgets-v2/stable/fxs-widgets.js" defer></script>
 </body>
 </html>

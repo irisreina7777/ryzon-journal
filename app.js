@@ -173,8 +173,10 @@ navBtns.forEach(btn => {
         if (targetId === 'view-dashboard') renderChart();
         if (targetId === 'view-edge') renderEdge();
         if (targetId === 'view-calendar') {
-            // Signal widgets to re-render using a resize event
-            setTimeout(() => window.dispatchEvent(new Event('resize')), 50);
+            // Official FXStreet SPA Fix: Force manual rendering when the view is shown
+            if (window.fxsWidgets) {
+                fxsWidgets.load('calendar', true);
+            }
         }
     });
 });

@@ -1,4 +1,4 @@
-const CACHE_NAME = 'ryzon-v7';
+const CACHE_NAME = 'ryzon-v8';
 const ASSETS = [
     '/',
     '/index.html',
@@ -8,7 +8,7 @@ const ASSETS = [
     '/manifest.json',
     'https://unpkg.com/lucide@latest',
     'https://cdn.jsdelivr.net/npm/chart.js',
-    'https://s3.tradingview.com/external-embedding/embed-widget-events.js'
+    'https://staticcontent.fxsstatic.com/widgets-v2/stable/fxs-widgets.js'
 ];
 
 self.addEventListener('install', e => {
