@@ -318,8 +318,48 @@
                         </div>
                     </div>
                 </header>
+
+                <!-- Filter Toolbar -->
+                <div class="cal-filters" id="cal-filters">
+                    <!-- Date Range -->
+                    <div class="cal-filter-row">
+                        <span class="cal-filter-label">Period</span>
+                        <div class="cal-filter-pills" id="cal-date-pills">
+                            <button class="cal-pill" data-cal-type="day" data-cal-range="today" onclick="setCalDate(this)">Today</button>
+                            <button class="cal-pill" data-cal-type="day" data-cal-range="tomorrow" onclick="setCalDate(this)">Tomorrow</button>
+                            <button class="cal-pill cal-pill-active" data-cal-type="week" data-cal-range="week" onclick="setCalDate(this)">This Week</button>
+                            <button class="cal-pill" data-cal-type="week" data-cal-range="nextweek" onclick="setCalDate(this)">Next Week</button>
+                        </div>
+                    </div>
+                    <!-- Importance -->
+                    <div class="cal-filter-row">
+                        <span class="cal-filter-label">Impact</span>
+                        <div class="cal-filter-pills" id="cal-imp-pills">
+                            <button class="cal-pill cal-pill-active" data-imp="" onclick="setCalImp(this)">All</button>
+                            <button class="cal-pill" data-imp="3" onclick="setCalImp(this)">🔴 High</button>
+                            <button class="cal-pill" data-imp="2,3" onclick="setCalImp(this)">🟠 Med+</button>
+                            <button class="cal-pill" data-imp="1" onclick="setCalImp(this)">🟡 Low</button>
+                        </div>
+                    </div>
+                    <!-- Countries -->
+                    <div class="cal-filter-row">
+                        <span class="cal-filter-label">Countries</span>
+                        <div class="cal-filter-pills cal-country-pills" id="cal-country-pills">
+                            <button class="cal-pill cal-pill-active" data-cc="5" onclick="toggleCalCountry(this)">🇺🇸 USD</button>
+                            <button class="cal-pill cal-pill-active" data-cc="4" onclick="toggleCalCountry(this)">🇪🇺 EUR</button>
+                            <button class="cal-pill cal-pill-active" data-cc="22" onclick="toggleCalCountry(this)">🇬🇧 GBP</button>
+                            <button class="cal-pill cal-pill-active" data-cc="72" onclick="toggleCalCountry(this)">🇯🇵 JPY</button>
+                            <button class="cal-pill cal-pill-active" data-cc="25" onclick="toggleCalCountry(this)">🇦🇺 AUD</button>
+                            <button class="cal-pill cal-pill-active" data-cc="32" onclick="toggleCalCountry(this)">🇨🇦 CAD</button>
+                            <button class="cal-pill cal-pill-active" data-cc="17" onclick="toggleCalCountry(this)">🇨🇭 CHF</button>
+                            <button class="cal-pill cal-pill-active" data-cc="36" onclick="toggleCalCountry(this)">🇳🇿 NZD</button>
+                            <button class="cal-pill" data-cc="37" onclick="toggleCalCountry(this)">🇩🇪 DE</button>
+                            <button class="cal-pill" data-cc="35" onclick="toggleCalCountry(this)">🇨🇳 CNY</button>
+                        </div>
+                    </div>
+                </div>
+
                 <div id="calendar-events-container" style="border: 1px solid var(--border-color); border-radius: 12px; background: #fff; overflow: hidden;">
-                    <!-- Investing.com Economic Calendar (Free, No Auth Required) -->
                     <iframe id="calendar-iframe" src="https://sslecal2.investing.com?columns=exc_flags,exc_currency,exc_importance,exc_actual,exc_forecast,exc_previous&features=datepicker,timezone&countries=5,4,72,22,17,25,32,36,37&calType=week&timeZone=55&lang=1" width="100%" frameborder="0" allowtransparency="true" style="border:none; display:block; min-height:600px;"></iframe>
                 </div>
             </section>

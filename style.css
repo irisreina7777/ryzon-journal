@@ -202,6 +202,64 @@ h3 {
     margin-bottom: 2rem;
 }
 
+/* Calendar Filters */
+.cal-filters {
+    background: var(--bg-card);
+    border: 1px solid var(--border-color);
+    border-radius: 12px;
+    padding: 0.75rem 1rem;
+    margin-bottom: 0.75rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+.cal-filter-row {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+.cal-filter-label {
+    font-size: 0.7rem;
+    font-weight: 600;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+    min-width: 62px;
+    flex-shrink: 0;
+}
+.cal-filter-pills {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.3rem;
+}
+.cal-pill {
+    padding: 4px 10px;
+    border-radius: 6px;
+    border: 1px solid var(--border-color);
+    background: #F9FAFB;
+    color: var(--text-secondary);
+    font-size: 0.72rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.15s ease;
+    white-space: nowrap;
+}
+.cal-pill:hover {
+    border-color: #06B6D4;
+    color: #06B6D4;
+    background: #ECFEFF;
+}
+.cal-pill-active {
+    background: #06B6D4;
+    color: #fff;
+    border-color: #06B6D4;
+}
+.cal-pill-active:hover {
+    background: #0891B2;
+    border-color: #0891B2;
+    color: #fff;
+}
+
 /* Calendar iframe - desktop default */
 #calendar-iframe {
     height: 850px;
@@ -734,8 +792,23 @@ label {
     .edge-sidebar { width: 100%; }
     .notebook-layout { grid-template-columns: 1fr; }
     .calc-panel { grid-template-columns: 1fr !important; }
-
-    /* --- Calendar iframe responsive --- */
+    /* --- Calendar filters + iframe responsive --- */
+    .cal-filters {
+        margin: 0 -1rem 0.5rem;
+        border-radius: 0;
+        border-left: none;
+        border-right: none;
+        padding: 0.5rem 0.75rem;
+        gap: 0.4rem;
+    }
+    .cal-filter-label {
+        min-width: 52px;
+        font-size: 0.6rem;
+    }
+    .cal-pill {
+        padding: 3px 7px;
+        font-size: 0.65rem;
+    }
     #calendar-events-container {
         margin: 0 -1rem;
         border-radius: 0 !important;
@@ -743,8 +816,8 @@ label {
         border-right: none !important;
     }
     #calendar-iframe {
-        height: calc(100vh - 160px);
-        min-height: 500px;
+        height: calc(100vh - 280px);
+        min-height: 450px;
     }
 }
 

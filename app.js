@@ -172,14 +172,75 @@ navBtns.forEach(btn => {
         });
         if (targetId === 'view-dashboard') renderChart();
         if (targetId === 'view-edge') renderEdge();
-        if (targetId === 'view-calendar') {
-            // Official FXStreet SPA Fix: Force manual rendering when the view is shown
-            if (window.fxsWidgets) {
-                fxsWidgets.load('calendar', true);
-            }
-        }
     });
 });
+
+// ============================================================
+// ECONOMIC CALENDAR FILTERS
+// ============================================================
+let calState = { calType: 'week', dateFrom: '', dateTo: '', importance: '', countries: ['5','4','22','72','25','32','17','36'] };
+
+function buildCalUrl() {
+    let url = 'https://sslecal2.investing.com?columns=exc_flags,exc_currency,exc_importance,exc_actual,exc_forecast,exc_previous&features=datepicker,timezone&lang=1&timeZone=55';
+    url += '&countries=' + calState.countries.join(',');
+    url += '&calType=' + calState.calType;
+    if (calState.importance) url += '&importance=' + calState.importance;
+    if (calState.dateFrom) url += '&dateFrom=' + calState.dateFrom;
+    if (calState.dateTo) url += '&dateTo=' + calState.dateTo;
+    return url;
+}
+
+function refreshCalendar() {
+    const iframe = document.getElementById('calendar-iframe');
+    if (iframe) iframe.src = buildCalUrl();
+}
+
+function setCalDate(btn) {
+    document.querySelectorAll('#cal-date-pills .cal-pill').forEach(p => p.classList.remove('cal-pill-active'));
+    btn.classList.add('cal-pill-active');
+    const range = btn.getAttribute('data-cal-range');
+    const today = new Date();
+    calState.dateFrom = '';
+    calState.dateTo = '';
+    if (range === 'today') {
+        calState.calType = 'day';
+    } else if (range === 'tomorrow') {
+        calState.calType = 'day';
+        const tmr = new Date(today); tmr.setDate(tmr.getDate() + 1);
+        const ds = tmr.toISOString().slice(0,10);
+        calState.dateFrom = ds;
+        calState.dateTo = ds;
+        calState.calType = 'custom';
+    } else if (range === 'week') {
+        calState.calType = 'week';
+    } else if (range === 'nextweek') {
+        const mon = new Date(today);
+        mon.setDate(mon.getDate() + (7 - mon.getDay() + 1));
+        const sun = new Date(mon); sun.setDate(sun.getDate() + 6);
+        calState.dateFrom = mon.toISOString().slice(0,10);
+        calState.dateTo = sun.toISOString().slice(0,10);
+        calState.calType = 'custom';
+    }
+    refreshCalendar();
+}
+
+function setCalImp(btn) {
+    document.querySelectorAll('#cal-imp-pills .cal-pill').forEach(p => p.classList.remove('cal-pill-active'));
+    btn.classList.add('cal-pill-active');
+    calState.importance = btn.getAttribute('data-imp');
+    refreshCalendar();
+}
+
+function toggleCalCountry(btn) {
+    const cc = btn.getAttribute('data-cc');
+    btn.classList.toggle('cal-pill-active');
+    if (btn.classList.contains('cal-pill-active')) {
+        if (!calState.countries.includes(cc)) calState.countries.push(cc);
+    } else {
+        calState.countries = calState.countries.filter(c => c !== cc);
+    }
+    if (calState.countries.length > 0) refreshCalendar();
+}
 
 // ============================================================
 // EDGE PLAYBOOK — FULLY DYNAMIC
