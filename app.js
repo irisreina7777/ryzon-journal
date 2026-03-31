@@ -783,10 +783,7 @@ function renderChart() {
     });
 }
 
-// --- BOOTSTRAP ---
-loadState();
-updateUI();
-renderChart();
+// --- BOOTSTRAP (Moved to end of file) ---
 
 // ============================================================
 // NOTEBOOK FEATURE
@@ -1163,5 +1160,26 @@ function calcFutures() {
 window.switchCalcTab = switchCalcTab;
 window.calcFutures = calcFutures;
 window.onFuturesInstrumentChange = onFuturesInstrumentChange;
+
+// --- INITIALIZE APPLICATION ---
+function initializeApp() {
+    loadState();
+    updateUI();
+    renderChart();
+    renderEdge();
+
+    // Set initial active view based on active nav button
+    const initialActiveBtn = document.querySelector('.nav-btn.active');
+    if (initialActiveBtn) {
+        const targetId = initialActiveBtn.getAttribute('data-target');
+        views.forEach(v => {
+            if (v.id === targetId) v.classList.remove('hidden');
+            else v.classList.add('hidden');
+        });
+    }
+}
+
+// Start everything
+initializeApp();
 
 // End of app.js
