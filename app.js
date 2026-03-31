@@ -26,9 +26,7 @@ function closeMobileSidebar() {
 }
 
 function initMobileUI() {
-    const topbar = document.getElementById('mobile-topbar');
     const isMobile = window.innerWidth <= 768;
-    if (topbar) topbar.style.display = isMobile ? 'flex' : 'none';
     if (!isMobile) closeMobileSidebar();
 }
 

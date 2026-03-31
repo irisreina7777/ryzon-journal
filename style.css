@@ -606,6 +606,8 @@ label {
 }
 .sidebar-overlay.active { display: block; }
 
+.mobile-topbar { display: none; }
+
 @media (max-width: 768px) {
     /* --- Layout --- */
     .app-container {
