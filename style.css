@@ -814,10 +814,12 @@ label {
         border-radius: 0 !important;
         border-left: none !important;
         border-right: none !important;
+        overflow: hidden; /* clip the shifted iframe */
     }
     #calendar-iframe {
-        height: 600px !important;
-        min-height: 600px !important;
+        height: 700px !important;
+        min-height: 700px !important;
+        margin-top: -90px; /* crop out the overlapping Investing.com header */
     }
 }
 
