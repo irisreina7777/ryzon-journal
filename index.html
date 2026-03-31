@@ -17,8 +17,6 @@
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <!-- Lucide Icons -->
     <script src="https://unpkg.com/lucide@latest"></script>
-    <!-- FXStreet Widgets Library -->
-    <script src="https://staticcontent.fxsstatic.com/widgets-v2/stable/fxs-widgets.js" defer></script>
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
@@ -318,23 +316,10 @@
                         <span style="font-size:0.65rem; font-weight:700; color:#06B6D4; text-transform:uppercase; letter-spacing:0.025em;">Live Terminal</span>
                     </div>
                 </header>
-                <div class="card" style="padding: 0; border: 1px solid var(--border-color); overflow: hidden; background: #fff;">
-                    <div id="calendar-events" class="card" style="box-shadow: none; border: 1px solid var(--border-color); border-radius: 8px; min-height:850px; padding: 0; background: #fff; overflow: hidden; position: relative;">
-                        <!-- Investing.com Economic Calendar Widget (Live Actuals & Reliable) -->
-                        <iframe src="https://sslecal2.investing.com?columns=exc_flags,exc_currency,exc_importance,exc_actual,exc_forecast,exc_previous&category=_main&importance=2,3&features=datepicker,timezone&countries=25,32,6,37,72,22,17,39,14,10,35,43,56,36,110,11,26,12,4,5&calType=week&timeZone=8&lang=1" 
-                                width="100%" 
-                                height="850" 
-                                frameborder="0" 
-                                allowtransparency="true" 
-                                marginwidth="0" 
-                                marginheight="0" 
-                                style="border: 0;">
-                        </iframe>
-                        <div style="padding: 10px; font-size: 11px; color: #666; text-align: center; border-top: 1px solid #eee;">
-                            Live Economic Calendar provided by <a href="https://www.investing.com/" rel="nofollow" target="_blank" style="color: #06B6D4; text-decoration: none; font-weight: 600;">Investing.com</a>
-                        </div>
+                    <div id="calendar-events-container" class="card" style="box-shadow: none; border: 1px solid var(--border-color); border-radius: 12px; min-height: 850px; padding: 0; background: #fff; overflow: visible;">
+                        <!-- FXStreet Economic Calendar Widget -->
+                        <div fxs-widget="calendar"></div>
                     </div>
-                </div>
             </section>
 
             <!-- Lot Size Calculator View -->
@@ -641,5 +626,7 @@
     </div>
 
     <script src="app.js"></script>
+    <!-- FXStreet Widgets Library (Live Terminal Engine) -->
+    <script src="https://staticcontent.fxsstatic.com/widgets-v2/stable/fxs-widgets.js" defer></script>
 </body>
 </html>
