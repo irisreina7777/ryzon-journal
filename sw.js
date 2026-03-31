@@ -1,4 +1,4 @@
-const CACHE_NAME = 'ryzon-v8';
+const CACHE_NAME = 'ryzon-v9';
 const ASSETS = [
     '/',
     '/index.html',
@@ -7,8 +7,7 @@ const ASSETS = [
     '/ryzon_logo.png',
     '/manifest.json',
     'https://unpkg.com/lucide@latest',
-    'https://cdn.jsdelivr.net/npm/chart.js',
-    'https://staticcontent.fxsstatic.com/widgets-v2/stable/fxs-widgets.js'
+    'https://cdn.jsdelivr.net/npm/chart.js'
 ];
 
 self.addEventListener('install', e => {

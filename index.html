@@ -316,9 +316,9 @@
                         <span style="font-size:0.65rem; font-weight:700; color:#06B6D4; text-transform:uppercase; letter-spacing:0.025em;">Live Terminal</span>
                     </div>
                 </header>
-                    <div id="calendar-events-container" class="card" style="box-shadow: none; border: 1px solid var(--border-color); border-radius: 12px; min-height: 850px; padding: 0.5rem; background: #fff; overflow: visible;">
-                        <!-- FXStreet Economic Calendar Widget v2 (Official Syntax) -->
-                        <div fxs-widget name="calendar" culture="en" timezone-offset="0"></div>
+                    <div id="calendar-events-container" class="card" style="box-shadow: none; border: 1px solid var(--border-color); border-radius: 12px; min-height: 850px; padding: 0; background: #fff; overflow: hidden;">
+                        <!-- Investing.com Economic Calendar (Free, No Auth Required) -->
+                        <iframe src="https://sslecal2.investing.com?columns=exc_flags,exc_currency,exc_importance,exc_actual,exc_forecast,exc_previous&features=datepicker,timezone&countries=5,4,72,22,17,25,32,36,37&calType=week&timeZone=55&lang=1" width="100%" height="850" frameborder="0" allowtransparency="true" style="border:none; display:block;"></iframe>
                     </div>
             </section>
 
@@ -626,7 +626,5 @@
     </div>
 
     <script src="app.js"></script>
-    <!-- FXStreet Widgets Library (must load AFTER DOM is ready, per official docs) -->
-    <script src="https://staticcontent.fxsstatic.com/widgets-v2/stable/fxs-widgets.js" defer></script>
 </body>
 </html>
