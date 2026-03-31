@@ -1,4 +1,4 @@
-const CACHE_NAME = 'ryzon-v10';
+const CACHE_NAME = 'ryzon-v11';
 const ASSETS = [
     '/',
     '/index.html',

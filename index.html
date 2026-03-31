@@ -359,8 +359,22 @@
                     </div>
                 </div>
 
-                <div id="calendar-events-container" style="border: 1px solid var(--border-color); border-radius: 12px; background: #fff;">
+                <!-- Desktop: iframe (works) -->
+                <div id="calendar-desktop" style="border: 1px solid var(--border-color); border-radius: 12px; background: #fff;">
                     <iframe id="calendar-iframe" src="https://sslecal2.investing.com?columns=exc_flags,exc_currency,exc_importance,exc_actual,exc_forecast,exc_previous&features=datepicker,timezone&countries=5,4,72,22,17,25,32,36,37&calType=week&timeZone=55&lang=1" width="100%" height="800" frameborder="0" scrolling="yes" allowtransparency="true" style="border:none; display:block;"></iframe>
+                </div>
+
+                <!-- Mobile: direct link (investing.com blocks mobile iframes) -->
+                <div id="calendar-mobile" style="display:none;">
+                    <div style="border: 1px solid var(--border-color); border-radius: 12px; background: #fff; padding: 2rem 1.5rem; text-align:center;">
+                        <div style="font-size:3rem; margin-bottom:0.75rem;">📅</div>
+                        <h3 style="margin:0 0 0.5rem; font-size:1.1rem;">Live Economic Calendar</h3>
+                        <p style="color:var(--text-muted); font-size:0.8rem; margin:0 0 1.25rem; line-height:1.5;">Tap below to open the full interactive calendar with real-time data, filters, and alerts.</p>
+                        <a href="https://www.investing.com/economic-calendar/" target="_blank" rel="noopener" style="display:inline-flex; align-items:center; gap:0.5rem; padding:0.75rem 1.5rem; background:#06B6D4; color:#fff; border-radius:8px; font-weight:600; font-size:0.9rem; text-decoration:none; box-shadow: 0 2px 8px rgba(6,182,212,0.3); transition:all 0.15s;">
+                            Open Calendar ↗
+                        </a>
+                        <p style="color:var(--text-muted); font-size:0.65rem; margin:1rem 0 0;">Powered by Investing.com</p>
+                    </div>
                 </div>
             </section>
 

@@ -792,7 +792,7 @@ label {
     .edge-sidebar { width: 100%; }
     .notebook-layout { grid-template-columns: 1fr; }
     .calc-panel { grid-template-columns: 1fr !important; }
-    /* --- Calendar filters + iframe responsive --- */
+    /* --- Calendar: show mobile version, hide desktop iframe --- */
     .cal-filters {
         margin: 0 -1rem 0.5rem;
         border-radius: 0;
@@ -800,6 +800,7 @@ label {
         border-right: none;
         padding: 0.5rem 0.75rem;
         gap: 0.4rem;
+        display: none; /* hide filters on mobile - they control the iframe which doesn't work */
     }
     .cal-filter-label {
         min-width: 52px;
@@ -809,15 +810,11 @@ label {
         padding: 3px 7px;
         font-size: 0.65rem;
     }
-    #calendar-events-container {
-        margin: 0 -1rem;
-        border-radius: 0 !important;
-        border-left: none !important;
-        border-right: none !important;
+    #calendar-desktop {
+        display: none !important;
     }
-    #calendar-iframe {
-        height: 600px !important;
-        min-height: 600px !important;
+    #calendar-mobile {
+        display: block !important;
     }
 }
 
