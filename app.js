@@ -174,7 +174,6 @@ navBtns.forEach(btn => {
         });
         if (targetId === 'view-dashboard') renderChart();
         if (targetId === 'view-edge') renderEdge();
-        if (targetId === 'view-calendar') fetchNewsCalendar();
     });
 });
 
