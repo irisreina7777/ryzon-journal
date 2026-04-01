@@ -998,6 +998,15 @@ function markReviewed() {
 
     // Re-render with clean slate
     renderEdge();
+
+    // Auto-open the archive list and scroll to top
+    setTimeout(() => {
+        const archiveList = document.getElementById('archive-list');
+        if (archiveList) archiveList.classList.remove('hidden');
+        const editorPanel = document.querySelector('.edge-editor-panel');
+        if (editorPanel) editorPanel.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+    }, 100);
 }
 
 function showSessionToast(message) {
