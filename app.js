@@ -127,28 +127,28 @@ const APP_STATE_KEY = 'iris_state_v2';
 const DEFAULT_PLANS = [
     {
         id: 'plan-1',
-        name: 'Daily Bias',
+        name: 'Daily Framework',
         active: true,
         lastReviewed: '',
         riskControls: { maxTrades: 2, riskPct: 1, maxLoss: 1000, maxProfit: 5000 },
         criteria: [
-            { id: 'c1', text: 'LQ Sweep', checked: false },
-            { id: 'c2', text: 'Market Shift', checked: false }
+            { id: 'c1', text: 'Liquidity sweep confirmation', checked: false },
+            { id: 'c2', text: 'Structural shift (order flow change)', checked: false }
         ],
         chartingSteps: [
-            'Mark HTF range + premium/discount.',
-            'Mark liquidity (PDH/PDL + equal highs/lows)',
-            'Decide continuation vs pullback vs reversal',
-            'Pick ONE target (opposing zone/structure).',
-            'Define invalidation: "My bias is wrong if price breaks + holds beyond X,"'
+            'Map higher timeframe range and key valuation zones (premium/discount)',
+            'Identify liquidity pools (PDH/PDL, equal highs/lows)',
+            'Define current narrative: continuation, retracement, or reversal',
+            'Select a single objective target (opposing structure)',
+            'Establish invalidation: "Framework is invalid if price accepts beyond ___"'
         ],
-        managementRules: 'Predefine risk before entry (fixed R, no resizing mid-trade)\nSet and Forget\nIf invalidation hits, you\'re done: exit and reassess, no "make it back"',
-        exitCriteria: 'Conditions that must be met before exiting a trade.',
-        tradingNotes: 'Bias is a plan + invalidation, not a prediction.\nIf you can\'t say your bias in one sentence, you don\'t have one.\nIf invalidation hits, reset. No coping, no revenge.\n"You don\'t build trust in your system with affirmations, you build it with data."\nConviction → confidence → competence → consistency.'
+        managementRules: 'Risk is predefined before execution (fixed exposure, no mid-trade adjustment)\nExecute with intent, avoid interference\nInvalidation hit \u2192 immediate exit, no recovery trades',
+        exitCriteria: 'Define clear conditions required to close the position.',
+        tradingNotes: 'Bias is a structured thesis, not a prediction\nIf clarity is missing, execution should not happen\nInvalidation resets the process \u2014 no emotional carryover\nTrust is built through data, not belief\nConsistency is the outcome of discipline'
     },
     {
         id: 'plan-2',
-        name: 'Weekly Range',
+        name: 'Weekly Structure',
         active: false,
         lastReviewed: '',
         riskControls: { maxTrades: 3, riskPct: 0.5, maxLoss: 500, maxProfit: 2000 },
@@ -157,15 +157,15 @@ const DEFAULT_PLANS = [
             { id: 'w2', text: 'Identify EQ (Midpoint)', checked: false }
         ],
         chartingSteps: [
-            'Mark weekly high and low on H4.',
-            'Find the weekly EQ midpoint.',
-            'Identify key weekly POIs.',
-            'Set bias based on previous week close.',
-            'Plan entry near discount or premium zone.'
+            'Map weekly range high and low on H4 timeframe.',
+            'Identify weekly equilibrium (midpoint).',
+            'Define key weekly points of interest.',
+            'Establish directional bias from prior weekly close.',
+            'Frame entry zones within discount or premium structure.'
         ],
-        managementRules: 'Take partials at EQ.\nMove SL to BE after 1R.\nNo adding to losers.',
-        exitCriteria: 'Hit weekly target at opposing structure.',
-        tradingNotes: 'Aiming to capture the range of the weekly candle.\nSimple is better — avoid overcomplicating.'
+        managementRules: 'Scale at equilibrium.\nAdjust stop to breakeven after 1R.\nNo position averaging against trend.',
+        exitCriteria: 'Target reached at opposing weekly structure.',
+        tradingNotes: 'Objective is to capture the weekly range expansion.\nSimplicity over complexity \u2014 execute with precision.'
     }
 ];
 
@@ -671,7 +671,7 @@ function renderPlanEditor() {
                 <!-- Charting Process -->
                 <div class="edge-section mb-6">
                     <div class="flex-between mb-3">
-                        <label class="section-label"><i data-lucide="bar-chart-2" style="width:14px;height:14px;margin-right:6px;"></i> Charting Process</label>
+                        <label class="section-label"><i data-lucide="bar-chart-2" style="width:14px;height:14px;margin-right:6px;"></i> Market Structuring</label>
                         <button class="add-row-btn" onclick="addChartingStep()"><i data-lucide="plus" style="width:12px;height:12px;"></i> Add Step</button>
                     </div>
                     <ol class="numbered-list text-sm text-primary" style="list-style:none; padding:0; display:flex; flex-direction:column; gap:0.5rem;" id="charting-steps">
@@ -687,8 +687,8 @@ function renderPlanEditor() {
                 <!-- Entry Criteria -->
                 <div class="edge-section mb-6">
                     <div class="flex-between mb-3">
-                        <label class="section-label"><i data-lucide="check-circle-2" style="width:14px;height:14px;margin-right:6px;"></i> Entry Criteria</label>
-                        <button class="add-row-btn" onclick="addCriteria()"><i data-lucide="plus" style="width:12px;height:12px;"></i> Add</button>
+                        <label class="section-label"><i data-lucide="check-circle-2" style="width:14px;height:14px;margin-right:6px;"></i> Entry Triggers</label>
+                        <button class="add-row-btn" onclick="addCriteria()"><i data-lucide="plus" style="width:12px;height:12px;"></i> Add Trigger</button>
                     </div>
                     <div style="display:flex; flex-direction:column; gap:0.5rem;" id="criteria-list">
                         ${plan.criteria.map(c => `
@@ -706,7 +706,7 @@ function renderPlanEditor() {
                     <label class="section-label mb-3" style="display:block;"><i data-lucide="image" style="width:14px;height:14px;margin-right:6px;"></i> Entry Models</label>
                     <div style="display:flex; gap:1rem;">
                         <div style="flex:1;">
-                            <p style="font-size:0.75rem; color:var(--text-secondary); margin-bottom:0.5rem;">Setup screenshot</p>
+                            <p style="font-size:0.75rem; color:var(--text-secondary); margin-bottom:0.5rem;">Primary setup reference</p>
                             <label style="display:flex; align-items:center; justify-content:center; height:7rem; background:#F9FAFB; border:1.5px dashed var(--border-color); border-radius:0.5rem; cursor:pointer; color:var(--text-muted);" title="Click to upload">
                                 <input type="file" accept="image/*" style="display:none;" onchange="previewImage(this, 'img-setup')">
                                 <img id="img-setup" src="" alt="" style="display:none; width:100%; height:100%; object-fit:cover; border-radius:0.5rem;">
@@ -714,7 +714,7 @@ function renderPlanEditor() {
                             </label>
                         </div>
                         <div style="flex:1;">
-                            <p style="font-size:0.75rem; color:var(--text-secondary); margin-bottom:0.5rem;">Entry examples</p>
+                            <p style="font-size:0.75rem; color:var(--text-secondary); margin-bottom:0.5rem;">Validated entry examples</p>
                             <label style="display:flex; align-items:center; justify-content:center; height:7rem; background:#F9FAFB; border:1.5px dashed var(--border-color); border-radius:0.5rem; cursor:pointer; color:var(--text-muted);" title="Click to upload">
                                 <input type="file" accept="image/*" style="display:none;" onchange="previewImage(this, 'img-entry')">
                                 <img id="img-entry" src="" alt="" style="display:none; width:100%; height:100%; object-fit:cover; border-radius:0.5rem;">
@@ -726,7 +726,7 @@ function renderPlanEditor() {
 
                 <!-- Trade Management Rules -->
                 <div class="edge-section mb-6">
-                    <label class="section-label mb-3" style="display:block;"><i data-lucide="list" style="width:14px;height:14px;margin-right:6px;"></i> Trade Management Rules</label>
+                    <label class="section-label mb-3" style="display:block;"><i data-lucide="list" style="width:14px;height:14px;margin-right:6px;"></i> Risk & Trade Discipline</label>
                     <div contenteditable="true" spellcheck="false" class="editable-area"
                         style="font-size:0.875rem; color:var(--text-primary); line-height:1.75; outline:none; padding:0.75rem; border:1.5px solid transparent; border-radius:0.5rem; min-height:60px; white-space:pre-wrap; cursor:text;"
                         onfocus="this.style.borderColor='var(--brand-blue)'; this.style.background='#F8FAFF';"
@@ -736,7 +736,7 @@ function renderPlanEditor() {
 
                 <!-- Exit Criteria -->
                 <div class="edge-section mb-6">
-                    <label class="section-label mb-3" style="display:block;"><i data-lucide="external-link" style="width:14px;height:14px;margin-right:6px;"></i> Exit Criteria</label>
+                    <label class="section-label mb-3" style="display:block;"><i data-lucide="external-link" style="width:14px;height:14px;margin-right:6px;"></i> Exit Protocol</label>
                     <div contenteditable="true" spellcheck="false" class="editable-area"
                         style="font-size:0.875rem; color:var(--text-secondary); line-height:1.75; outline:none; padding:0.75rem 0.75rem 0.75rem 1rem; border-left:3px solid var(--border-color); border-right:1.5px solid transparent; border-top:1.5px solid transparent; border-bottom:1.5px solid transparent; border-radius:0.5rem; min-height:50px; white-space:pre-wrap; cursor:text;"
                         onfocus="this.style.borderColor='var(--brand-blue)'; this.style.background='#F8FAFF';"
@@ -746,7 +746,7 @@ function renderPlanEditor() {
 
                 <!-- Trading Notes -->
                 <div class="edge-section mb-6">
-                    <label class="section-label mb-3" style="display:block;"><i data-lucide="edit-3" style="width:14px;height:14px;margin-right:6px;"></i> Trading Notes</label>
+                    <label class="section-label mb-3" style="display:block;"><i data-lucide="edit-3" style="width:14px;height:14px;margin-right:6px;"></i> Trader Notes</label>
                     <div contenteditable="true" spellcheck="false" class="editable-area"
                         style="font-size:0.875rem; color:var(--text-primary); line-height:1.75; outline:none; padding:0.75rem; border:1.5px solid transparent; border-radius:0.5rem; min-height:80px; white-space:pre-wrap; cursor:text;"
                         onfocus="this.style.borderColor='var(--brand-blue)'; this.style.background='#F8FAFF';"
@@ -757,7 +757,7 @@ function renderPlanEditor() {
                 <!-- Mark as Reviewed -->
                 <div style="display:flex; align-items:center; gap:1rem; margin-top:2rem; padding-top:1rem; border-top:1px solid var(--border-color);">
                     <button class="btn btn-purple" onclick="markReviewed()">
-                        <i data-lucide="check" style="width:14px;height:14px;"></i> Mark as reviewed
+                        <i data-lucide="check" style="width:14px;height:14px;"></i> Mark Session Complete
                     </button>
                     <span id="reviewed-timestamp" style="font-size:0.75rem; color:var(--text-muted);">${plan.lastReviewed || ''}</span>
                 </div>
@@ -767,28 +767,28 @@ function renderPlanEditor() {
             <div class="edge-right">
                 <!-- Plan Stats -->
                 <div style="background:#F9FAFB; border:1px solid var(--border-color); border-radius:0.75rem; padding:1.25rem; margin-bottom:1rem;">
-                    <h4 style="font-size:0.7rem; text-transform:uppercase; letter-spacing:0.05em; color:var(--text-muted); font-weight:600; margin-bottom:1rem;">Plan Stats</h4>
+                    <h4 style="font-size:0.7rem; text-transform:uppercase; letter-spacing:0.05em; color:var(--text-muted); font-weight:600; margin-bottom:1rem;">Performance Metrics</h4>
                     <div style="display:grid; grid-template-columns:1fr 1fr; gap:1rem;">
-                        <div><p style="font-size:1.125rem; font-weight:700;">${planTrades}</p><p style="font-size:0.75rem; color:var(--text-secondary); margin-top:2px;">Trades Taken</p></div>
+                        <div><p style="font-size:1.125rem; font-weight:700;">${planTrades}</p><p style="font-size:0.75rem; color:var(--text-secondary); margin-top:2px;">Trades Executed</p></div>
                         <div><p style="font-size:1.125rem; font-weight:700;">${winRate}%</p><p style="font-size:0.75rem; color:var(--text-secondary); margin-top:2px;">Win Rate</p></div>
-                        <div><p style="font-size:1.125rem; font-weight:700;">${totalPnl >= 0 ? '+' : ''}$${Math.abs(totalPnl).toFixed(2)}</p><p style="font-size:0.75rem; color:var(--text-secondary); margin-top:2px;">Net PnL</p></div>
-                        <div><p style="font-size:1.125rem; font-weight:700;">${complianceRate}%</p><p style="font-size:0.75rem; color:var(--text-secondary); margin-top:2px;">Compliance</p></div>
+                        <div><p style="font-size:1.125rem; font-weight:700;">${totalPnl >= 0 ? '+' : ''}$${Math.abs(totalPnl).toFixed(2)}</p><p style="font-size:0.75rem; color:var(--text-secondary); margin-top:2px;">Net Return</p></div>
+                        <div><p style="font-size:1.125rem; font-weight:700;">${complianceRate}%</p><p style="font-size:0.75rem; color:var(--text-secondary); margin-top:2px;">Rule Adherence</p></div>
                     </div>
                 </div>
 
                 <!-- Risk Controls -->
                 <div style="background:#FFF5F5; border:1px solid #FECACA; border-radius:0.75rem; padding:1.25rem;">
                     <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1rem;">
-                        <h4 style="font-size:0.7rem; text-transform:uppercase; letter-spacing:0.05em; color:var(--text-muted); font-weight:600;">Risk Controls</h4>
+                        <h4 style="font-size:0.7rem; text-transform:uppercase; letter-spacing:0.05em; color:var(--text-muted); font-weight:600;">Risk Parameters</h4>
                         <button onclick="openRiskModal()" style="background:none; border:none; cursor:pointer; color:var(--text-muted); display:flex; align-items:center; justify-content:center; padding:4px; border-radius:4px;" title="Edit Risk Controls">
                             <i data-lucide="edit-2" style="width:14px;height:14px;"></i>
                         </button>
                     </div>
                     <div style="display:grid; grid-template-columns:1fr 1fr; gap:1rem;" id="risk-values">
-                        <div><p style="font-size:1.125rem; font-weight:700;">${plan.riskControls.maxTrades}</p><p style="font-size:0.75rem; color:var(--text-secondary); margin-top:2px;">Max trades/day</p></div>
-                        <div><p style="font-size:1.125rem; font-weight:700;">$${plan.riskControls.maxLoss.toLocaleString()}</p><p style="font-size:0.75rem; color:var(--text-secondary); margin-top:2px;">Max daily loss</p></div>
-                        <div><p style="font-size:1.125rem; font-weight:700;">$${plan.riskControls.maxProfit.toLocaleString()}</p><p style="font-size:0.75rem; color:var(--text-secondary); margin-top:2px;">Max daily profit</p></div>
-                        <div><p style="font-size:1.125rem; font-weight:700;">${plan.riskControls.riskPct}%</p><p style="font-size:0.75rem; color:var(--text-secondary); margin-top:2px;">Risk per trade</p></div>
+                        <div><p style="font-size:1.125rem; font-weight:700;">${plan.riskControls.maxTrades}</p><p style="font-size:0.75rem; color:var(--text-secondary); margin-top:2px;">Max Trades / Day</p></div>
+                        <div><p style="font-size:1.125rem; font-weight:700;">$${plan.riskControls.maxLoss.toLocaleString()}</p><p style="font-size:0.75rem; color:var(--text-secondary); margin-top:2px;">Max Daily Drawdown</p></div>
+                        <div><p style="font-size:1.125rem; font-weight:700;">$${plan.riskControls.maxProfit.toLocaleString()}</p><p style="font-size:0.75rem; color:var(--text-secondary); margin-top:2px;">Max Daily Target</p></div>
+                        <div><p style="font-size:1.125rem; font-weight:700;">${plan.riskControls.riskPct}%</p><p style="font-size:0.75rem; color:var(--text-secondary); margin-top:2px;">Risk per Position</p></div>
                     </div>
                 </div>
             </div>
@@ -818,7 +818,7 @@ function togglePlanActive(checked) {
 function markReviewed() {
     const plan = getActivePlan();
     const now = new Date();
-    plan.lastReviewed = `Reviewed today at ${now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}`;
+    plan.lastReviewed = `Session completed at ${now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}`;
     saveState();
     const ts = document.getElementById('reviewed-timestamp');
     if (ts) ts.textContent = plan.lastReviewed;
@@ -826,7 +826,7 @@ function markReviewed() {
 
 // --- CHARTING STEPS ---
 function addChartingStep() {
-    const text = prompt('Enter new charting step:');
+    const text = prompt('Enter new structuring step:');
     if (!text || !text.trim()) return;
     const plan = getActivePlan();
     plan.chartingSteps.push(text.trim());

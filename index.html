@@ -169,8 +169,8 @@
                 <header class="view-header mb-2">
                     <div style="display:flex; justify-content:space-between; align-items:flex-start; gap:1rem; flex-wrap:wrap;">
                         <div>
-                            <h1>Ryzon</h1>
-                            <p class="subtitle">Build and refine your trading playbooks — your rules, biases, and edge in one place.</p>
+                            <h1>Execution Framework</h1>
+                            <p class="subtitle">Structure your edge — define bias, rules, and decision-making with precision.</p>
                         </div>
                         <button class="btn btn-ghost border text-brand btn-sm" onclick="openNewPlanModal()" style="flex-shrink:0;">
                             <i data-lucide="plus"></i> New Plan
@@ -196,27 +196,27 @@
             <div class="modal-overlay hidden" id="risk-modal">
                 <div class="modal-content card" style="max-width: 480px;">
                     <header class="modal-header">
-                        <h2>Edit Risk Controls</h2>
+                        <h2>Edit Risk Parameters</h2>
                         <button class="btn-icon" id="close-risk-modal"><i data-lucide="x"></i></button>
                     </header>
                     <div class="modal-body">
                         <div class="form-row">
                             <div class="form-group half">
-                                <label>Max Trades/Day</label>
+                                <label>Max Trades / Day</label>
                                 <input type="number" id="rc-max-trades" class="input-field" min="1" max="20">
                             </div>
                             <div class="form-group half">
-                                <label>Risk Per Trade (%)</label>
+                                <label>Risk per Position (%)</label>
                                 <input type="number" id="rc-risk-pct" class="input-field" step="0.1" min="0.1" max="10">
                             </div>
                         </div>
                         <div class="form-row">
                             <div class="form-group half">
-                                <label>Max Daily Loss ($)</label>
+                                <label>Max Daily Drawdown ($)</label>
                                 <input type="number" id="rc-max-loss" class="input-field" step="10">
                             </div>
                             <div class="form-group half">
-                                <label>Max Daily Profit ($)</label>
+                                <label>Max Daily Target ($)</label>
                                 <input type="number" id="rc-max-profit" class="input-field" step="10">
                             </div>
                         </div>
