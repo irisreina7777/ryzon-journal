@@ -173,6 +173,7 @@ navBtns.forEach(btn => {
         if (targetId === 'view-dashboard') renderChart();
         if (targetId === 'view-edge') renderEdge();
         if (targetId === 'view-charts') {
+            renderSymbolPills();
             loadTradingViewChart(currentChartSymbol);
             loadChartPlan(currentChartSymbol);
         }
@@ -253,6 +254,61 @@ let currentChartSymbol = 'OANDA:NAS100USD';
 let currentChartLabel = 'NQ';
 let tvWidgetLoaded = false;
 
+// Default symbols (not removable)
+const DEFAULT_CHART_SYMBOLS = [
+    { sym: 'OANDA:NAS100USD', label: 'NQ' },
+    { sym: 'OANDA:SPX500USD', label: 'ES' },
+    { sym: 'FX:EURUSD', label: 'EUR/USD' },
+    { sym: 'OANDA:XAUUSD', label: 'XAU/USD' },
+    { sym: 'FX:GBPUSD', label: 'GBP/USD' }
+];
+
+function getPinnedSymbols() {
+    const raw = localStorage.getItem('ryzon_pinned_symbols');
+    return raw ? JSON.parse(raw) : [];
+}
+
+function savePinnedSymbols(pins) {
+    localStorage.setItem('ryzon_pinned_symbols', JSON.stringify(pins));
+}
+
+function renderSymbolPills() {
+    const container = document.getElementById('chart-symbol-pills');
+    if (!container) return;
+    container.innerHTML = '';
+
+    // Default pills
+    DEFAULT_CHART_SYMBOLS.forEach(s => {
+        const btn = document.createElement('button');
+        btn.className = 'chart-sym-pill' + (s.sym === currentChartSymbol ? ' chart-sym-active' : '');
+        btn.setAttribute('data-sym', s.sym);
+        btn.textContent = s.label;
+        btn.onclick = () => switchChartSymbol(s.sym, s.label);
+        container.appendChild(btn);
+    });
+
+    // Pinned pills (with × remove button)
+    const pins = getPinnedSymbols();
+    pins.forEach(p => {
+        const btn = document.createElement('button');
+        btn.className = 'chart-sym-pill chart-sym-pinned' + (p.sym === currentChartSymbol ? ' chart-sym-active' : '');
+        btn.setAttribute('data-sym', p.sym);
+        
+        const labelSpan = document.createElement('span');
+        labelSpan.textContent = p.label;
+        btn.appendChild(labelSpan);
+
+        const removeX = document.createElement('span');
+        removeX.className = 'pin-remove';
+        removeX.textContent = '×';
+        removeX.onclick = (e) => { e.stopPropagation(); unpinSymbol(p.sym); };
+        btn.appendChild(removeX);
+
+        btn.onclick = () => switchChartSymbol(p.sym, p.label);
+        container.appendChild(btn);
+    });
+}
+
 function getChartPlanKey(sym) { return 'ryzon_chartplan_' + sym; }
 
 function loadTradingViewChart(symbol) {
@@ -294,14 +350,11 @@ function loadTradingViewChart(symbol) {
     document.head.appendChild(script);
 }
 
-function switchChartSymbol(btn) {
-    document.querySelectorAll('#chart-symbol-pills .chart-sym-pill').forEach(p => p.classList.remove('chart-sym-active'));
-    btn.classList.add('chart-sym-active');
-    const sym = btn.getAttribute('data-sym');
-    const label = btn.textContent.trim();
+function switchChartSymbol(sym, label) {
     currentChartSymbol = sym;
     currentChartLabel = label;
     document.getElementById('chart-plan-symbol').textContent = label + ' — Trade Plan';
+    renderSymbolPills();
     loadTradingViewChart(sym);
     loadChartPlan(sym);
 }
@@ -310,13 +363,36 @@ function loadCustomSymbol() {
     const input = document.getElementById('chart-custom-input');
     const val = input.value.trim().toUpperCase();
     if (!val) return;
-    document.querySelectorAll('#chart-symbol-pills .chart-sym-pill').forEach(p => p.classList.remove('chart-sym-active'));
-    currentChartSymbol = val;
-    currentChartLabel = val;
-    document.getElementById('chart-plan-symbol').textContent = val + ' — Trade Plan';
-    loadTradingViewChart(val);
-    loadChartPlan(val);
+
+    // Check if it's already a default — just switch to it
+    const existing = DEFAULT_CHART_SYMBOLS.find(s => s.sym === val || s.label === val);
+    if (existing) {
+        switchChartSymbol(existing.sym, existing.label);
+        input.value = '';
+        return;
+    }
+
+    // Pin it if not already pinned
+    const pins = getPinnedSymbols();
+    if (!pins.find(p => p.sym === val)) {
+        pins.push({ sym: val, label: val });
+        savePinnedSymbols(pins);
+    }
+
+    switchChartSymbol(val, val);
     input.value = '';
+}
+
+function unpinSymbol(sym) {
+    let pins = getPinnedSymbols();
+    pins = pins.filter(p => p.sym !== sym);
+    savePinnedSymbols(pins);
+    // If we're viewing the unpinned symbol, switch to first default
+    if (currentChartSymbol === sym) {
+        switchChartSymbol(DEFAULT_CHART_SYMBOLS[0].sym, DEFAULT_CHART_SYMBOLS[0].label);
+    } else {
+        renderSymbolPills();
+    }
 }
 
 function saveChartPlan() {

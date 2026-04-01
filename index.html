@@ -321,15 +321,11 @@
                 <!-- Symbol Switcher Bar -->
                 <div class="chart-symbol-bar">
                     <div class="chart-symbol-pills" id="chart-symbol-pills">
-                        <button class="chart-sym-pill chart-sym-active" data-sym="OANDA:NAS100USD" onclick="switchChartSymbol(this)">NQ</button>
-                        <button class="chart-sym-pill" data-sym="OANDA:SPX500USD" onclick="switchChartSymbol(this)">ES</button>
-                        <button class="chart-sym-pill" data-sym="FX:EURUSD" onclick="switchChartSymbol(this)">EUR/USD</button>
-                        <button class="chart-sym-pill" data-sym="OANDA:XAUUSD" onclick="switchChartSymbol(this)">XAU/USD</button>
-                        <button class="chart-sym-pill" data-sym="FX:GBPUSD" onclick="switchChartSymbol(this)">GBP/USD</button>
+                        <!-- Populated dynamically by renderSymbolPills() -->
                     </div>
                     <div class="chart-custom-sym">
-                        <input type="text" id="chart-custom-input" class="input-field" placeholder="Custom symbol..." style="font-size:0.75rem; padding:4px 8px; width:120px;">
-                        <button class="btn btn-primary btn-sm" onclick="loadCustomSymbol()" style="padding:4px 10px; font-size:0.7rem;">Go</button>
+                        <input type="text" id="chart-custom-input" class="input-field" placeholder="Pin a symbol..." style="font-size:0.75rem; padding:4px 8px; width:120px;" onkeydown="if(event.key==='Enter')loadCustomSymbol()">
+                        <button class="btn btn-primary btn-sm" onclick="loadCustomSymbol()" style="padding:4px 10px; font-size:0.7rem;">+ Pin</button>
                     </div>
                 </div>
 
