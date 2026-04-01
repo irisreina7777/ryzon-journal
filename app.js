@@ -936,7 +936,7 @@ function deleteChartingStep(index) {
 
 // --- CRITERIA ---
 function addCriteria() {
-    const text = prompt('Enter new entry criteria:');
+    const text = prompt('Enter new trigger:');
     if (!text || !text.trim()) return;
     const plan = getActivePlan();
     plan.criteria.push({ id: 'c' + Date.now(), text: text.trim(), checked: false });
@@ -951,7 +951,7 @@ function saveCriteriaText(id, text) {
 function saveCriteriaCheck(id, checked) {
     const plan = getActivePlan();
     const item = plan.criteria.find(c => c.id === id);
-    if (item) { item.checked = checked; saveState(); }
+    if (item) { item.checked = checked; saveState(); renderEdge(); }
 }
 function deleteCriteria(id) {
     const plan = getActivePlan();
