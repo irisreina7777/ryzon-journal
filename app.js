@@ -737,8 +737,8 @@ function renderPlanEditor() {
         ${(plan.sessionHistory && plan.sessionHistory.length > 0) ? `
         <div class="ef-archive-section">
             <div class="ef-archive-header" onclick="document.getElementById('archive-list').classList.toggle('hidden')">
-                <span class="ef-archive-title"><i data-lucide="archive" style="width:13px;height:13px;"></i> Past Sessions (${plan.sessionHistory.length})</span>
-                <i data-lucide="chevron-down" style="width:13px;height:13px;color:var(--text-muted);"></i>
+                <span class="ef-archive-title"><i data-lucide="archive" style="width:14px;height:14px;"></i> Past Sessions (${plan.sessionHistory.length})</span>
+                <i data-lucide="chevron-down" style="width:14px;height:14px;color:#FFFFFF;"></i>
             </div>
             <div id="archive-list" class="ef-archive-list hidden">
                 ${[...plan.sessionHistory].reverse().map((s, idx) => {

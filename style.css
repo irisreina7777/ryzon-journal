@@ -1174,12 +1174,14 @@ label {
 .ef-archive-section { margin-bottom: 1rem; }
 .ef-archive-header {
     display: flex; justify-content: space-between; align-items: center;
-    padding: 0.5rem 0.75rem; cursor: pointer; border-radius: 0.5rem;
-    background: #F1F5F9; transition: background 0.12s;
+    padding: 0.6rem 0.85rem; cursor: pointer; border-radius: 0.5rem;
+    background: #0E7490; /* Brand Blue dark shade */
+    transition: background 0.12s, transform 0.1s;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.1);
 }
-.ef-archive-header:hover { background: #E2E8F0; }
+.ef-archive-header:hover { background: #164E63; transform: translateY(-1px); }
 .ef-archive-title {
-    font-size: 0.75rem; font-weight: 600; color: var(--text-secondary);
+    font-size: 0.8rem; font-weight: 600; color: #FFFFFF;
     display: flex; align-items: center; gap: 0.4rem;
 }
 .ef-archive-list {
