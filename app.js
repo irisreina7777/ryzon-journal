@@ -295,6 +295,7 @@ async function saveStateToFirestore() {
         });
     } catch(e) {
         console.warn('Firestore save failed:', e.message);
+        if (typeof showSessionToast === 'function') showSessionToast('⚠️ Cloud save failed: ' + e.message);
     }
 }
 
@@ -1498,7 +1499,7 @@ function renderJournal() {
                 <td>${emotionTags || '-'}</td>
                 <td class="text-sm text-secondary" style="max-width:200px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${notePreview}</td>
                 <td>
-                    <button class="btn-icon delete-btn text-danger" data-id="${t.id}" title="Delete" onclick="event.stopPropagation()"><i data-lucide="trash-2"></i></button>
+                    <button class="btn-icon delete-btn text-danger" title="Delete" onclick="deleteTrade('${t.id}', event)"><i data-lucide="trash-2"></i></button>
                 </td>
             </tr>
             <tr class="journal-expand-row hidden" id="expand-${t.id}">
@@ -1539,6 +1540,15 @@ function renderJournal() {
             </tr>
         `);
     });
+}
+
+function deleteTrade(id, event) {
+    if (event) event.stopPropagation();
+    if (confirm('Delete this trade?')) {
+        state.trades = state.trades.filter(t => t.id !== id);
+        saveState();
+        updateUI();
+    }
 }
 
 function toggleTradeExpand(id) {
