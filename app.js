@@ -644,8 +644,7 @@ function renderPlanEditor() {
     plan.session = plan.session || 'ny';
     plan.biasDirection = plan.biasDirection || 'neutral';
     plan.biasScenario = plan.biasScenario || 'continuation';
-    plan.htfRangeHigh = plan.htfRangeHigh || '';
-    plan.htfRangeLow = plan.htfRangeLow || '';
+    plan.pricePosition = plan.pricePosition || 'equilibrium';
     plan.targetZone = plan.targetZone || '';
     plan.invalidationLevel = plan.invalidationLevel || '';
 
@@ -702,10 +701,12 @@ function renderPlanEditor() {
                         <span class="ef-card-title"><i data-lucide="activity" style="width:14px;height:14px;"></i> Market Context</span>
                     </div>
                     <div class="ef-row" style="gap:0.5rem; margin-bottom:0.75rem;">
-                        <span class="ef-label">HTF Range</span>
-                        <input type="text" class="ef-input-sm" placeholder="Low" value="${plan.htfRangeLow}" onblur="saveQuickField('htfRangeLow', this.value)">
-                        <span style="color:var(--text-muted); font-size:0.75rem;">–</span>
-                        <input type="text" class="ef-input-sm" placeholder="High" value="${plan.htfRangeHigh}" onblur="saveQuickField('htfRangeHigh', this.value)">
+                        <span class="ef-label">Where is price?</span>
+                        <div class="ef-pill-group">
+                            <button class="ef-pill ${plan.pricePosition === 'premium' ? 'ef-pill-active-red' : ''}" onclick="saveQuickField('pricePosition','premium')">Premium</button>
+                            <button class="ef-pill ${plan.pricePosition === 'equilibrium' ? 'ef-pill-active' : ''}" onclick="saveQuickField('pricePosition','equilibrium')">Equilibrium</button>
+                            <button class="ef-pill ${plan.pricePosition === 'discount' ? 'ef-pill-active-green' : ''}" onclick="saveQuickField('pricePosition','discount')">Discount</button>
+                        </div>
                     </div>
                     <div class="ef-row">
                         <span class="ef-label">Bias Direction</span>
