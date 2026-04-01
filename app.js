@@ -2,6 +2,71 @@
 lucide.createIcons();
 
 // ============================================================
+// FIREBASE AUTH — Login / Logout / User UI
+// ============================================================
+let currentUser = null;
+
+function loginWithGoogle() {
+    const provider = new firebase.auth.GoogleAuthProvider();
+    auth.signInWithPopup(provider).catch(err => {
+        showLoginError(err.message);
+    });
+}
+
+function loginWithEmail(e) {
+    e.preventDefault();
+    const email = document.getElementById('login-email').value;
+    const password = document.getElementById('login-password').value;
+    auth.signInWithEmailAndPassword(email, password).catch(err => {
+        showLoginError(err.message);
+    });
+}
+
+function signUpWithEmail() {
+    const email = document.getElementById('login-email').value;
+    const password = document.getElementById('login-password').value;
+    if (!email || !password) { showLoginError('Please enter email and password first.'); return; }
+    if (password.length < 6) { showLoginError('Password must be at least 6 characters.'); return; }
+    auth.createUserWithEmailAndPassword(email, password).catch(err => {
+        showLoginError(err.message);
+    });
+}
+
+function logoutUser() {
+    if (confirm('Sign out of RYZON?')) {
+        auth.signOut();
+    }
+}
+
+function showLoginError(msg) {
+    const el = document.getElementById('login-error');
+    if (el) { el.textContent = msg; el.style.display = 'block'; }
+}
+
+function updateUserUI(user) {
+    const loginScreen = document.getElementById('login-screen');
+    const sidebarUser = document.getElementById('sidebar-user');
+    const logoutBtn = document.getElementById('logout-btn');
+    
+    if (user) {
+        // Logged in — hide login screen, show user profile
+        loginScreen?.classList.add('hidden');
+        if (sidebarUser) {
+            sidebarUser.style.display = 'flex';
+            document.getElementById('sidebar-user-avatar').src = user.photoURL || 'ryzon_logo.png';
+            document.getElementById('sidebar-user-name').textContent = user.displayName || 'Trader';
+            document.getElementById('sidebar-user-email').textContent = user.email || '';
+        }
+        if (logoutBtn) logoutBtn.style.display = '';
+    } else {
+        // Logged out — show login screen, hide user profile
+        loginScreen?.classList.remove('hidden');
+        if (sidebarUser) sidebarUser.style.display = 'none';
+        if (logoutBtn) logoutBtn.style.display = 'none';
+    }
+}
+
+// ============================================================
 // MOBILE SIDEBAR (Drawer Navigation)
 // ============================================================
 function toggleMobileSidebar() {
@@ -113,6 +178,7 @@ let state = {
 let activePlanId = 'plan-1';
 
 function loadState() {
+    // Load from localStorage first (instant, for offline)
     const saved = localStorage.getItem(APP_STATE_KEY);
     if (saved) {
         try {
@@ -131,8 +197,97 @@ function loadState() {
     activePlanId = state.activePlanId;
 }
 
+async function loadStateFromFirestore() {
+    if (!currentUser) return;
+    try {
+        const doc = await db.collection('users').doc(currentUser.uid).collection('data').doc('state').get();
+        if (doc.exists) {
+            const data = doc.data();
+            state.trades = data.trades || [];
+            state.plans = data.plans || JSON.parse(JSON.stringify(DEFAULT_PLANS));
+            state.activePlanId = data.activePlanId || 'plan-1';
+            activePlanId = state.activePlanId;
+            // Update localStorage cache
+            localStorage.setItem(APP_STATE_KEY, JSON.stringify(state));
+            console.log('Loaded state from Firestore');
+        } else {
+            // First login — migrate localStorage data to Firestore
+            console.log('No Firestore data — migrating localStorage');
+            await saveStateToFirestore();
+        }
+    } catch(e) {
+        console.warn('Firestore load failed, using localStorage:', e.message);
+    }
+}
+
 function saveState() {
+    // Always save to localStorage (instant, offline-safe)
     localStorage.setItem(APP_STATE_KEY, JSON.stringify(state));
+    // Also save to Firestore if logged in
+    saveStateToFirestore();
+}
+
+async function saveStateToFirestore() {
+    if (!currentUser) return;
+    try {
+        await db.collection('users').doc(currentUser.uid).collection('data').doc('state').set({
+            trades: state.trades,
+            plans: state.plans,
+            activePlanId: state.activePlanId,
+            updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+        });
+    } catch(e) {
+        console.warn('Firestore save failed:', e.message);
+    }
+}
+
+// Save extras (symbols, chart plans, notes, checklist) to Firestore
+async function saveExtrasToFirestore() {
+    if (!currentUser) return;
+    try {
+        const extras = {
+            symbols: JSON.parse(localStorage.getItem('ryzon_symbol_list') || '[]'),
+            notes: JSON.parse(localStorage.getItem('ryzon_notes') || '[]'),
+            checklist: JSON.parse(localStorage.getItem('ryzon_premarket') || '[]'),
+            updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+        };
+        // Collect chart plans
+        const chartPlans = {};
+        for (let i = 0; i < localStorage.length; i++) {
+            const key = localStorage.key(i);
+            if (key.startsWith('ryzon_chartplan_')) {
+                chartPlans[key] = localStorage.getItem(key);
+            }
+        }
+        extras.chartPlans = chartPlans;
+        await db.collection('users').doc(currentUser.uid).collection('data').doc('extras').set(extras);
+    } catch(e) {
+        console.warn('Firestore extras save failed:', e.message);
+    }
+}
+
+async function loadExtrasFromFirestore() {
+    if (!currentUser) return;
+    try {
+        const doc = await db.collection('users').doc(currentUser.uid).collection('data').doc('extras').get();
+        if (doc.exists) {
+            const data = doc.data();
+            if (data.symbols) localStorage.setItem('ryzon_symbol_list', JSON.stringify(data.symbols));
+            if (data.notes) localStorage.setItem('ryzon_notes', JSON.stringify(data.notes));
+            if (data.checklist) localStorage.setItem('ryzon_premarket', JSON.stringify(data.checklist));
+            if (data.chartPlans) {
+                Object.keys(data.chartPlans).forEach(key => {
+                    localStorage.setItem(key, data.chartPlans[key]);
+                });
+            }
+            console.log('Loaded extras from Firestore');
+        } else {
+            // First login — push localStorage extras to cloud
+            await saveExtrasToFirestore();
+        }
+    } catch(e) {
+        console.warn('Firestore extras load failed:', e.message);
+    }
 }
 
 function getActivePlan() {
@@ -273,6 +428,7 @@ function getSymbolList() {
 
 function saveSymbolList(list) {
     localStorage.setItem('ryzon_symbol_list', JSON.stringify(list));
+    saveExtrasToFirestore();
 }
 
 function renderSymbolPills() {
@@ -392,6 +548,7 @@ function saveChartPlan() {
         updated: new Date().toISOString()
     };
     localStorage.setItem(getChartPlanKey(currentChartSymbol), JSON.stringify(plan));
+    saveExtrasToFirestore();
     const indicator = document.getElementById('chart-plan-saved');
     indicator.textContent = 'Saved ' + new Date().toLocaleTimeString();
 }
@@ -1172,7 +1329,7 @@ const NOTE_KEY = 'iris_notes_v1';
 function getNotes() {
     try { return JSON.parse(localStorage.getItem(NOTE_KEY)) || []; } catch { return []; }
 }
-function saveNotes(notes) { localStorage.setItem(NOTE_KEY, JSON.stringify(notes)); }
+function saveNotes(notes) { localStorage.setItem(NOTE_KEY, JSON.stringify(notes)); saveExtrasToFirestore(); }
 
 const NOTE_TEMPLATES = {
     'trade-review': `## Trade Review\n\n**Asset:** \n**Date:** ${new Date().toLocaleDateString()}\n**Direction:** Long / Short\n**Result:** +/- $\n\n### What I Did Well\n- \n\n### What I Could Improve\n- \n\n### Rule Compliance\n- Followed plan: Yes / No\n- Emotions: \n\n### Key Lesson\n`,
@@ -1343,7 +1500,7 @@ function getChecklist() {
     try { return JSON.parse(localStorage.getItem(PREMARKET_KEY)) || JSON.parse(JSON.stringify(DEFAULT_CHECKLIST)); }
     catch { return JSON.parse(JSON.stringify(DEFAULT_CHECKLIST)); }
 }
-function saveChecklist(list) { localStorage.setItem(PREMARKET_KEY, JSON.stringify(list)); }
+function saveChecklist(list) { localStorage.setItem(PREMARKET_KEY, JSON.stringify(list)); saveExtrasToFirestore(); }
 
 function togglePreMarket() {
     const w = document.getElementById('premarket-widget');
@@ -1540,12 +1697,13 @@ window.onFuturesInstrumentChange = onFuturesInstrumentChange;
 
 // --- INITIALIZE APPLICATION ---
 function initializeApp() {
+    // Load from localStorage first (instant display)
     loadState();
     updateUI();
     renderChart();
     renderEdge();
 
-    // Set initial active view based on active nav button
+    // Set initial active view
     const initialActiveBtn = document.querySelector('.nav-btn.active');
     if (initialActiveBtn) {
         const targetId = initialActiveBtn.getAttribute('data-target');
@@ -1554,6 +1712,25 @@ function initializeApp() {
             else v.classList.add('hidden');
         });
     }
+
+    // Firebase Auth State Listener
+    auth.onAuthStateChanged(async (user) => {
+        currentUser = user;
+        updateUserUI(user);
+
+        if (user) {
+            console.log('User signed in:', user.email || user.displayName);
+            // Load from Firestore (may be newer than localStorage)
+            await loadStateFromFirestore();
+            await loadExtrasFromFirestore();
+            // Refresh UI with cloud data
+            updateUI();
+            renderChart();
+            renderEdge();
+        } else {
+            console.log('User signed out');
+        }
+    });
 }
 
 // Start everything

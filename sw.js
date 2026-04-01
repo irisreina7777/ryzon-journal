@@ -1,9 +1,10 @@
-const CACHE_NAME = 'ryzon-v18';
+const CACHE_NAME = 'ryzon-v19';
 const ASSETS = [
     '/',
     '/index.html',
     '/style.css',
     '/app.js',
+    '/firebase-config.js',
     '/ryzon_logo.png',
     '/manifest.json',
     'https://unpkg.com/lucide@latest',
