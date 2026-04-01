@@ -1166,6 +1166,41 @@ label {
 .ef-complete-btn:hover { background: #0891B2; transform: translateY(-1px); }
 
 /* ============================================
+   JOURNAL — Expandable Trade Rows
+   ============================================ */
+.journal-row { transition: background 0.12s; }
+.journal-row:hover { background: #F0F9FF !important; }
+.journal-row-active { background: #EFF6FF !important; }
+.journal-expand-row td { border-top: none !important; }
+.journal-expand-content {
+    background: #F8FAFC; border: 1px solid var(--border-color);
+    border-top: none; border-radius: 0 0 0.5rem 0.5rem;
+    padding: 1rem 1.25rem; margin: 0 0.5rem 0.5rem;
+}
+.journal-expand-grid {
+    display: grid; grid-template-columns: repeat(3, 1fr);
+    gap: 0.75rem; margin-bottom: 1rem;
+}
+.journal-expand-detail { display: flex; flex-direction: column; gap: 2px; }
+.journal-detail-label {
+    font-size: 0.68rem; text-transform: uppercase; letter-spacing: 0.04em;
+    color: var(--text-muted); font-weight: 600;
+}
+.journal-detail-value { font-size: 0.85rem; color: var(--text-primary); }
+.journal-expand-notes {
+    padding-top: 0.75rem; border-top: 1px solid var(--border-color);
+}
+.journal-notes-full {
+    font-size: 0.85rem; color: var(--text-primary); line-height: 1.7;
+    margin-top: 0.4rem; white-space: pre-wrap;
+    background: #fff; border: 1px solid var(--border-color);
+    border-radius: 0.375rem; padding: 0.75rem;
+}
+@media (max-width: 768px) {
+    .journal-expand-grid { grid-template-columns: repeat(2, 1fr); }
+}
+
+/* ============================================
    Pre-Market Popup Mode (daily auto-show)
    ============================================ */
 .premarket-popup-mode {

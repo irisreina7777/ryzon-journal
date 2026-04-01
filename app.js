@@ -1305,17 +1305,72 @@ function renderJournal() {
         const pnlClass = t.pnl >= 0 ? 'pnl-pos' : 'pnl-neg';
         const pnlSign = t.pnl >= 0 ? '+' : '';
         const dirClass = t.direction === 'Long' ? 'direction-long' : 'direction-short';
+        const notePreview = t.notes ? (t.notes.length > 30 ? t.notes.substring(0, 30) + '...' : t.notes) : '-';
+
+        // Main row
         journalTbody.insertAdjacentHTML('beforeend', `
-            <tr>
+            <tr class="journal-row" data-trade-id="${t.id}" onclick="toggleTradeExpand('${t.id}')" style="cursor:pointer;">
                 <td class="text-xs text-muted">${dateStr}</td>
                 <td class="fw-medium">${t.asset}</td>
                 <td class="${dirClass}">${t.direction}</td>
                 <td class="${pnlClass}">${pnlSign}$${t.pnl.toFixed(2)}</td>
                 <td>${emotionTags || '-'}</td>
-                <td class="text-sm text-secondary" style="max-width:200px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;" title="${t.notes}">${t.notes || '-'}</td>
-                <td><button class="btn-icon delete-btn text-danger" data-id="${t.id}" title="Delete"><i data-lucide="trash-2"></i></button></td>
-            </tr>`);
+                <td class="text-sm text-secondary" style="max-width:200px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${notePreview}</td>
+                <td>
+                    <button class="btn-icon delete-btn text-danger" data-id="${t.id}" title="Delete" onclick="event.stopPropagation()"><i data-lucide="trash-2"></i></button>
+                </td>
+            </tr>
+            <tr class="journal-expand-row hidden" id="expand-${t.id}">
+                <td colspan="7" style="padding:0;">
+                    <div class="journal-expand-content">
+                        <div class="journal-expand-grid">
+                            <div class="journal-expand-detail">
+                                <span class="journal-detail-label">Date & Time</span>
+                                <span class="journal-detail-value">${dateStr}</span>
+                            </div>
+                            <div class="journal-expand-detail">
+                                <span class="journal-detail-label">Asset</span>
+                                <span class="journal-detail-value fw-medium">${t.asset}</span>
+                            </div>
+                            <div class="journal-expand-detail">
+                                <span class="journal-detail-label">Direction</span>
+                                <span class="journal-detail-value ${dirClass}">${t.direction}</span>
+                            </div>
+                            <div class="journal-expand-detail">
+                                <span class="journal-detail-label">Result</span>
+                                <span class="journal-detail-value ${pnlClass}" style="font-weight:700;">${pnlSign}$${t.pnl.toFixed(2)}</span>
+                            </div>
+                            <div class="journal-expand-detail">
+                                <span class="journal-detail-label">Followed Plan</span>
+                                <span class="journal-detail-value">${t.discipline === 'Yes' ? '✅ Yes' : '❌ No'}</span>
+                            </div>
+                            <div class="journal-expand-detail">
+                                <span class="journal-detail-label">Emotions</span>
+                                <span class="journal-detail-value">${emotionTags || '-'}</span>
+                            </div>
+                        </div>
+                        <div class="journal-expand-notes">
+                            <span class="journal-detail-label">Notes & Lessons</span>
+                            <div class="journal-notes-full">${t.notes || 'No notes recorded.'}</div>
+                        </div>
+                    </div>
+                </td>
+            </tr>
+        `);
     });
+}
+
+function toggleTradeExpand(id) {
+    const row = document.getElementById('expand-' + id);
+    if (!row) return;
+    const isOpen = !row.classList.contains('hidden');
+    // Close all others first
+    document.querySelectorAll('.journal-expand-row').forEach(r => r.classList.add('hidden'));
+    document.querySelectorAll('.journal-row').forEach(r => r.classList.remove('journal-row-active'));
+    if (!isOpen) {
+        row.classList.remove('hidden');
+        row.previousElementSibling?.classList.add('journal-row-active');
+    }
 }
 
 function calculateAndRenderMetrics() {
