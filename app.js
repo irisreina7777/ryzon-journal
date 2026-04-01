@@ -217,13 +217,14 @@ async function loadStateFromFirestore() {
         const doc = await db.collection('users').doc(currentUser.uid).collection('data').doc('state').get();
         if (doc.exists) {
             const data = doc.data();
+            // Always use Firestore as source of truth when available
             state.trades = data.trades || [];
             state.plans = data.plans || JSON.parse(JSON.stringify(DEFAULT_PLANS));
             state.activePlanId = data.activePlanId || 'plan-1';
             activePlanId = state.activePlanId;
             // Update localStorage cache
             localStorage.setItem(APP_STATE_KEY, JSON.stringify(state));
-            console.log('Loaded state from Firestore');
+            console.log('Loaded state from Firestore (' + state.trades.length + ' trades, ' + state.plans.length + ' plans)');
         } else {
             // First login — migrate localStorage data to Firestore
             console.log('No Firestore data — migrating localStorage');
@@ -262,7 +263,7 @@ async function saveExtrasToFirestore() {
         const extras = {
             symbols: JSON.parse(localStorage.getItem('ryzon_symbol_list') || '[]'),
             notes: JSON.parse(localStorage.getItem('ryzon_notes') || '[]'),
-            checklist: JSON.parse(localStorage.getItem('ryzon_premarket') || '[]'),
+            checklist: JSON.parse(localStorage.getItem(PREMARKET_KEY) || localStorage.getItem('iris_premarket_v1') || '[]'),
             updatedAt: firebase.firestore.FieldValue.serverTimestamp()
         };
         // Collect chart plans
@@ -288,7 +289,7 @@ async function loadExtrasFromFirestore() {
             const data = doc.data();
             if (data.symbols) localStorage.setItem('ryzon_symbol_list', JSON.stringify(data.symbols));
             if (data.notes) localStorage.setItem('ryzon_notes', JSON.stringify(data.notes));
-            if (data.checklist) localStorage.setItem('ryzon_premarket', JSON.stringify(data.checklist));
+            if (data.checklist) localStorage.setItem(PREMARKET_KEY, JSON.stringify(data.checklist));
             if (data.chartPlans) {
                 Object.keys(data.chartPlans).forEach(key => {
                     localStorage.setItem(key, data.chartPlans[key]);
