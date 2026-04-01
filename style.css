@@ -260,6 +260,136 @@ h3 {
     color: #fff;
 }
 
+/* ============================================================
+   CHARTS SPLIT VIEW
+   ============================================================ */
+
+/* Symbol Switcher Bar */
+.chart-symbol-bar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.75rem;
+    margin-bottom: 0.75rem;
+    flex-wrap: wrap;
+}
+.chart-symbol-pills {
+    display: flex;
+    gap: 0.3rem;
+    flex-wrap: wrap;
+}
+.chart-sym-pill {
+    padding: 5px 12px;
+    border-radius: 6px;
+    border: 1px solid var(--border-color);
+    background: #F9FAFB;
+    color: var(--text-secondary);
+    font-size: 0.75rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.15s ease;
+    white-space: nowrap;
+}
+.chart-sym-pill:hover {
+    border-color: #06B6D4;
+    color: #06B6D4;
+    background: #ECFEFF;
+}
+.chart-sym-active {
+    background: #06B6D4;
+    color: #fff;
+    border-color: #06B6D4;
+}
+.chart-sym-active:hover {
+    background: #0891B2;
+    border-color: #0891B2;
+    color: #fff;
+}
+.chart-custom-sym {
+    display: flex;
+    gap: 0.3rem;
+    align-items: center;
+}
+
+/* Split Layout */
+.charts-layout {
+    display: flex;
+    gap: 1rem;
+    align-items: stretch;
+    min-height: 600px;
+}
+.charts-chart-panel {
+    flex: 0 0 65%;
+    min-height: 600px;
+    border-radius: 12px;
+    overflow: hidden;
+    border: 1px solid var(--border-color);
+    background: #fff;
+}
+.charts-plan-panel {
+    flex: 1;
+    background: var(--bg-card);
+    border: 1px solid var(--border-color);
+    border-radius: 12px;
+    padding: 1.25rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+    overflow-y: auto;
+    max-height: 650px;
+}
+.charts-plan-header {
+    padding-bottom: 0.5rem;
+    border-bottom: 2px solid var(--border-color);
+}
+.charts-plan-field {
+    display: flex;
+    flex-direction: column;
+    gap: 0.35rem;
+}
+.charts-plan-label {
+    font-size: 0.7rem;
+    font-weight: 600;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+}
+
+/* Bias Pills */
+.charts-bias-pills {
+    display: flex;
+    gap: 0.3rem;
+}
+.bias-pill {
+    flex: 1;
+    padding: 6px 8px;
+    border-radius: 6px;
+    border: 1px solid var(--border-color);
+    background: #F9FAFB;
+    color: var(--text-secondary);
+    font-size: 0.72rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.15s ease;
+    text-align: center;
+}
+.bias-pill:hover { background: #F1F5F9; }
+.bias-pill.bias-active[data-bias="bullish"] {
+    background: #DCFCE7;
+    color: #16A34A;
+    border-color: #86EFAC;
+}
+.bias-pill.bias-active[data-bias="neutral"] {
+    background: #F1F5F9;
+    color: #475569;
+    border-color: #94A3B8;
+}
+.bias-pill.bias-active[data-bias="bearish"] {
+    background: #FEE2E2;
+    color: #DC2626;
+    border-color: #FCA5A5;
+}
+
 /* Calendar iframe - desktop default */
 #calendar-iframe {
     height: 850px;
@@ -792,6 +922,36 @@ label {
     .edge-sidebar { width: 100%; }
     .notebook-layout { grid-template-columns: 1fr; }
     .calc-panel { grid-template-columns: 1fr !important; }
+
+    /* --- Charts responsive --- */
+    .charts-layout {
+        flex-direction: column;
+        min-height: auto;
+    }
+    .charts-chart-panel {
+        flex: none;
+        width: 100%;
+        min-height: 400px;
+        height: 400px;
+    }
+    .charts-plan-panel {
+        max-height: none;
+        padding: 1rem;
+    }
+    .chart-symbol-bar {
+        gap: 0.4rem;
+    }
+    .chart-sym-pill {
+        padding: 4px 8px;
+        font-size: 0.68rem;
+    }
+    .chart-custom-sym {
+        width: 100%;
+    }
+    .chart-custom-sym input {
+        flex: 1;
+        width: auto !important;
+    }
     /* --- Calendar filters + iframe responsive --- */
     .cal-filters {
         margin: 0 -1rem 0.5rem;

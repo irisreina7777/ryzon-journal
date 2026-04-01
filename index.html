@@ -42,6 +42,9 @@
                 <button class="nav-btn" data-target="view-calendar">
                     <i data-lucide="calendar"></i> Calendar
                 </button>
+                <button class="nav-btn" data-target="view-charts">
+                    <i data-lucide="line-chart"></i> Charts
+                </button>
                 <button class="nav-btn" data-target="view-calculator">
                     <i data-lucide="calculator"></i> Calculator
                 </button>
@@ -299,6 +302,75 @@
                                 <span id="note-saved-indicator" style="font-size:0.75rem; color:var(--text-muted);"></span>
                                 <button class="btn btn-ghost border text-danger btn-sm" onclick="deleteActiveNote()"><i data-lucide="trash-2" style="width:13px;height:13px;"></i> Delete</button>
                             </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Charts + Trade Plan View -->
+            <section id="view-charts" class="view-section hidden">
+                <header class="view-header" style="margin-bottom: 0.75rem;">
+                    <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:0.5rem;">
+                        <div>
+                            <h1 style="margin:0;">Charts</h1>
+                            <p class="subtitle" style="margin:0.25rem 0 0;">Analyze price action alongside your trade plan.</p>
+                        </div>
+                    </div>
+                </header>
+
+                <!-- Symbol Switcher Bar -->
+                <div class="chart-symbol-bar">
+                    <div class="chart-symbol-pills" id="chart-symbol-pills">
+                        <button class="chart-sym-pill chart-sym-active" data-sym="OANDA:NAS100USD" onclick="switchChartSymbol(this)">NQ</button>
+                        <button class="chart-sym-pill" data-sym="OANDA:SPX500USD" onclick="switchChartSymbol(this)">ES</button>
+                        <button class="chart-sym-pill" data-sym="FX:EURUSD" onclick="switchChartSymbol(this)">EUR/USD</button>
+                        <button class="chart-sym-pill" data-sym="OANDA:XAUUSD" onclick="switchChartSymbol(this)">XAU/USD</button>
+                        <button class="chart-sym-pill" data-sym="FX:GBPUSD" onclick="switchChartSymbol(this)">GBP/USD</button>
+                    </div>
+                    <div class="chart-custom-sym">
+                        <input type="text" id="chart-custom-input" class="input-field" placeholder="Custom symbol..." style="font-size:0.75rem; padding:4px 8px; width:120px;">
+                        <button class="btn btn-primary btn-sm" onclick="loadCustomSymbol()" style="padding:4px 10px; font-size:0.7rem;">Go</button>
+                    </div>
+                </div>
+
+                <!-- Split View: Chart + Plan -->
+                <div class="charts-layout">
+                    <!-- Left: TradingView Chart -->
+                    <div class="charts-chart-panel" id="charts-chart-panel">
+                        <div id="tradingview-chart-container" style="width:100%; height:100%;"></div>
+                    </div>
+
+                    <!-- Right: Trade Plan Editor -->
+                    <div class="charts-plan-panel">
+                        <div class="charts-plan-header">
+                            <h3 id="chart-plan-symbol" style="margin:0; font-size:1rem;">NQ — Trade Plan</h3>
+                        </div>
+
+                        <!-- Bias -->
+                        <div class="charts-plan-field">
+                            <label class="charts-plan-label">Bias</label>
+                            <div class="charts-bias-pills" id="chart-bias-pills">
+                                <button class="bias-pill" data-bias="bullish" onclick="setChartBias(this)">🟢 Bullish</button>
+                                <button class="bias-pill bias-neutral bias-active" data-bias="neutral" onclick="setChartBias(this)">⚪ Neutral</button>
+                                <button class="bias-pill" data-bias="bearish" onclick="setChartBias(this)">🔴 Bearish</button>
+                            </div>
+                        </div>
+
+                        <!-- Key Levels -->
+                        <div class="charts-plan-field">
+                            <label class="charts-plan-label">Key Levels</label>
+                            <textarea id="chart-plan-levels" class="input-field text-area" placeholder="e.g.&#10;Resistance: 18,450&#10;Support: 18,200&#10;POC: 18,320" style="min-height:100px; font-size:0.8rem; resize:vertical;" oninput="saveChartPlan()"></textarea>
+                        </div>
+
+                        <!-- Session Notes -->
+                        <div class="charts-plan-field">
+                            <label class="charts-plan-label">Session Notes</label>
+                            <textarea id="chart-plan-notes" class="input-field text-area" placeholder="What's your plan for this session? Key observations, setups you're watching..." style="min-height:140px; font-size:0.8rem; resize:vertical; line-height:1.6;" oninput="saveChartPlan()"></textarea>
+                        </div>
+
+                        <div style="display:flex; justify-content:space-between; align-items:center; margin-top:0.5rem;">
+                            <span id="chart-plan-saved" style="font-size:0.65rem; color:var(--text-muted);"></span>
+                            <button class="btn btn-ghost border text-danger btn-sm" onclick="clearChartPlan()" style="font-size:0.7rem;"><i data-lucide="trash-2" style="width:12px;height:12px;"></i> Clear</button>
                         </div>
                     </div>
                 </div>

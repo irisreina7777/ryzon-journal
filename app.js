@@ -172,6 +172,10 @@ navBtns.forEach(btn => {
         });
         if (targetId === 'view-dashboard') renderChart();
         if (targetId === 'view-edge') renderEdge();
+        if (targetId === 'view-charts') {
+            loadTradingViewChart(currentChartSymbol);
+            loadChartPlan(currentChartSymbol);
+        }
     });
 });
 
@@ -240,6 +244,119 @@ function toggleCalCountry(btn) {
         calState.countries = calState.countries.filter(c => c !== cc);
     }
     if (calState.countries.length > 0) refreshCalendar();
+}
+
+// ============================================================
+// CHARTS + TRADE PLAN (TradingView Split View)
+// ============================================================
+let currentChartSymbol = 'OANDA:NAS100USD';
+let currentChartLabel = 'NQ';
+let tvWidgetLoaded = false;
+
+function getChartPlanKey(sym) { return 'ryzon_chartplan_' + sym; }
+
+function loadTradingViewChart(symbol) {
+    const container = document.getElementById('tradingview-chart-container');
+    if (!container) return;
+    container.innerHTML = '';
+    const widgetDiv = document.createElement('div');
+    widgetDiv.id = 'tradingview_chart';
+    widgetDiv.style.width = '100%';
+    widgetDiv.style.height = '100%';
+    container.appendChild(widgetDiv);
+
+    const script = document.createElement('script');
+    script.src = 'https://s3.tradingview.com/tv.js';
+    script.onload = function() {
+        if (window.TradingView) {
+            new TradingView.widget({
+                "autosize": true,
+                "symbol": symbol,
+                "interval": "60",
+                "timezone": "Etc/UTC",
+                "theme": "light",
+                "style": "1",
+                "locale": "en",
+                "toolbar_bg": "#f1f3f6",
+                "enable_publishing": false,
+                "allow_symbol_change": true,
+                "details": true,
+                "hotlist": false,
+                "calendar": false,
+                "studies": ["STD;EMA"],
+                "container_id": "tradingview_chart",
+                "hide_side_toolbar": false,
+                "withdateranges": true
+            });
+            tvWidgetLoaded = true;
+        }
+    };
+    document.head.appendChild(script);
+}
+
+function switchChartSymbol(btn) {
+    document.querySelectorAll('#chart-symbol-pills .chart-sym-pill').forEach(p => p.classList.remove('chart-sym-active'));
+    btn.classList.add('chart-sym-active');
+    const sym = btn.getAttribute('data-sym');
+    const label = btn.textContent.trim();
+    currentChartSymbol = sym;
+    currentChartLabel = label;
+    document.getElementById('chart-plan-symbol').textContent = label + ' — Trade Plan';
+    loadTradingViewChart(sym);
+    loadChartPlan(sym);
+}
+
+function loadCustomSymbol() {
+    const input = document.getElementById('chart-custom-input');
+    const val = input.value.trim().toUpperCase();
+    if (!val) return;
+    document.querySelectorAll('#chart-symbol-pills .chart-sym-pill').forEach(p => p.classList.remove('chart-sym-active'));
+    currentChartSymbol = val;
+    currentChartLabel = val;
+    document.getElementById('chart-plan-symbol').textContent = val + ' — Trade Plan';
+    loadTradingViewChart(val);
+    loadChartPlan(val);
+    input.value = '';
+}
+
+function saveChartPlan() {
+    const plan = {
+        bias: document.querySelector('#chart-bias-pills .bias-active')?.getAttribute('data-bias') || 'neutral',
+        levels: document.getElementById('chart-plan-levels').value,
+        notes: document.getElementById('chart-plan-notes').value,
+        updated: new Date().toISOString()
+    };
+    localStorage.setItem(getChartPlanKey(currentChartSymbol), JSON.stringify(plan));
+    const indicator = document.getElementById('chart-plan-saved');
+    indicator.textContent = 'Saved ' + new Date().toLocaleTimeString();
+}
+
+function loadChartPlan(sym) {
+    const raw = localStorage.getItem(getChartPlanKey(sym));
+    const plan = raw ? JSON.parse(raw) : { bias: 'neutral', levels: '', notes: '' };
+
+    // Set bias
+    document.querySelectorAll('#chart-bias-pills .bias-pill').forEach(p => p.classList.remove('bias-active'));
+    const biasBtn = document.querySelector('#chart-bias-pills .bias-pill[data-bias="' + plan.bias + '"]');
+    if (biasBtn) biasBtn.classList.add('bias-active');
+
+    // Set fields
+    document.getElementById('chart-plan-levels').value = plan.levels || '';
+    document.getElementById('chart-plan-notes').value = plan.notes || '';
+    document.getElementById('chart-plan-saved').textContent = plan.updated ? 'Last saved ' + new Date(plan.updated).toLocaleTimeString() : '';
+}
+
+function setChartBias(btn) {
+    document.querySelectorAll('#chart-bias-pills .bias-pill').forEach(p => p.classList.remove('bias-active'));
+    btn.classList.add('bias-active');
+    saveChartPlan();
+}
+
+function clearChartPlan() {
+    if (!confirm('Clear the trade plan for ' + currentChartLabel + '?')) return;
+    localStorage.removeItem(getChartPlanKey(currentChartSymbol));
+    loadChartPlan(currentChartSymbol);
+    document.getElementById('chart-plan-saved').textContent = 'Cleared';
 }
 
 // ============================================================
