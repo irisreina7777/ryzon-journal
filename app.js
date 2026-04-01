@@ -58,11 +58,19 @@ function updateUserUI(user) {
             document.getElementById('sidebar-user-email').textContent = user.email || '';
         }
         if (logoutBtn) logoutBtn.style.display = '';
+        const deskSync = document.getElementById('desktop-sync-btn');
+        if (deskSync) deskSync.style.display = 'flex';
+        const mobSync = document.getElementById('mobile-sync-btn');
+        if (mobSync) mobSync.style.display = '';
     } else {
         // Logged out — show login screen, hide user profile
         loginScreen?.classList.remove('hidden');
         if (sidebarUser) sidebarUser.style.display = 'none';
         if (logoutBtn) logoutBtn.style.display = 'none';
+        const deskSync = document.getElementById('desktop-sync-btn');
+        if (deskSync) deskSync.style.display = 'none';
+        const mobSync = document.getElementById('mobile-sync-btn');
+        if (mobSync) mobSync.style.display = 'none';
     }
 }
 
@@ -232,6 +240,40 @@ async function loadStateFromFirestore() {
         }
     } catch(e) {
         console.warn('Firestore load failed, using localStorage:', e.message);
+    }
+}
+
+async function forceSync() {
+    if (!currentUser) return;
+    
+    // Check if offline
+    if (!navigator.onLine) {
+        if (typeof showSessionToast === 'function') showSessionToast('⚠️ You are offline. Cannot sync.');
+        return;
+    }
+
+    const deskSync = document.getElementById('desktop-sync-btn');
+    const mobSync = document.getElementById('mobile-sync-btn');
+    
+    // Add spinning animation
+    if (deskSync) deskSync.querySelector('i').classList.add('lucide-spin');
+    if (mobSync) mobSync.querySelector('i').classList.add('lucide-spin');
+
+    try {
+        await loadStateFromFirestore();
+        await loadExtrasFromFirestore();
+        updateUI();
+        renderChart();
+        renderEdge();
+        if (typeof showSessionToast === 'function') showSessionToast('☁️ Cloud Sync Complete');
+    } catch(e) {
+        console.error('Sync failed', e);
+        if (typeof showSessionToast === 'function') showSessionToast('❌ Sync failed: ' + e.message);
+    } finally {
+        setTimeout(() => {
+            if (deskSync) deskSync.querySelector('i').classList.remove('lucide-spin');
+            if (mobSync) mobSync.querySelector('i').classList.remove('lucide-spin');
+        }, 500);
     }
 }
 

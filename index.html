@@ -65,6 +65,9 @@
                 <button class="nav-btn action-btn" onclick="togglePreMarket()" style="color:var(--brand-blue);">
                     <i data-lucide="sun"></i> Pre-Market
                 </button>
+                <button class="nav-btn action-btn" id="desktop-sync-btn" onclick="forceSync()" style="color:var(--text-primary); display:none;">
+                    <i data-lucide="refresh-cw"></i> Sync Cloud
+                </button>
                 <button class="nav-btn action-btn text-danger" id="reset-data-btn">
                     <i data-lucide="trash-2"></i> Reset Data
                 </button>
@@ -80,7 +83,12 @@
                 <i data-lucide="menu" style="width:24px;height:24px;"></i>
             </button>
             <span class="mobile-topbar-title">RYZON</span>
-            <img src="ryzon_logo.png" alt="RYZE" style="width:36px; height:36px; object-fit:contain; border-radius:6px;">
+            <div style="display:flex; align-items:center; gap:0.5rem;">
+                <button class="btn-icon" onclick="forceSync()" title="Sync Cloud Data" id="mobile-sync-btn" style="color:var(--text-primary);">
+                    <i data-lucide="refresh-cw" style="width:18px;height:18px;"></i>
+                </button>
+                <img src="ryzon_logo.png" alt="RYZE" style="width:36px; height:36px; object-fit:contain; border-radius:6px;">
+            </div>
         </div>
 
         <!-- Sidebar Overlay (mobile backdrop) -->

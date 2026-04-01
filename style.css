@@ -46,6 +46,9 @@ body {
     overflow: hidden;
 }
 
+@keyframes spin { 100% { transform: rotate(360deg); } }
+.lucide-spin { animation: spin 1s linear infinite; }
+
 /* Typography Utilities */
 .text-sm { font-size: 0.875rem; }
 .text-xs { font-size: 0.75rem; }
