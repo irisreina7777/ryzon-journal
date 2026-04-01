@@ -1595,6 +1595,7 @@ function togglePreMarket() {
     if (!w) return;
     const isVisible = w.style.display !== 'none';
     w.style.display = isVisible ? 'none' : 'block';
+    w.classList.remove('premarket-popup-mode');
     if (!isVisible) { renderPreMarket(); lucide.createIcons(); }
 }
 
@@ -1630,6 +1631,33 @@ function resetPreMarket() {
     saveChecklist(list);
     renderPreMarket();
 }
+
+// --- Auto-popup once per day ---
+const PREMARKET_SHOWN_KEY = 'iris_premarket_last_shown';
+
+function showPreMarketPopup() {
+    const w = document.getElementById('premarket-widget');
+    if (!w) return;
+    w.style.display = 'block';
+    w.classList.add('premarket-popup-mode');
+    renderPreMarket();
+    lucide.createIcons();
+}
+
+function checkDailyPreMarket() {
+    const today = new Date().toDateString();
+    const lastShown = localStorage.getItem(PREMARKET_SHOWN_KEY);
+    if (lastShown === today) return;
+    // New day — reset checklist and show popup
+    localStorage.setItem(PREMARKET_SHOWN_KEY, today);
+    const list = getChecklist().map(i => ({ ...i, done: false }));
+    saveChecklist(list);
+    // Short delay so the app finishes rendering first
+    setTimeout(() => showPreMarketPopup(), 600);
+}
+
+// Run after page load
+window.addEventListener('load', () => setTimeout(checkDailyPreMarket, 1000));
 
 // ============================================================
 // ============================================================

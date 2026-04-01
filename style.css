@@ -1166,6 +1166,24 @@ label {
 .ef-complete-btn:hover { background: #0891B2; transform: translateY(-1px); }
 
 /* ============================================
+   Pre-Market Popup Mode (daily auto-show)
+   ============================================ */
+.premarket-popup-mode {
+    position: fixed !important;
+    top: 50% !important; left: 50% !important;
+    right: auto !important; bottom: auto !important;
+    transform: translate(-50%, -50%) !important;
+    width: 380px !important; max-width: 92vw !important;
+    z-index: 10000 !important;
+    animation: premarket-fadein 0.35s ease-out;
+    box-shadow: 0 25px 50px -12px rgba(0,0,0,0.25), 0 0 0 9999px rgba(0,0,0,0.4) !important;
+}
+@keyframes premarket-fadein {
+    from { opacity: 0; transform: translate(-50%, -48%); }
+    to { opacity: 1; transform: translate(-50%, -50%); }
+}
+
+/* ============================================
    RESPONSIVE LAYOUT CLASSES (Desktop Defaults)
    ============================================ */
 .edge-layout { display: flex; gap: 2rem; align-items: flex-start; }
