@@ -977,6 +977,195 @@ label {
 .custom-checkbox.square { border-radius: 4px; border: 1px solid #D1D5DB; }
 
 /* ============================================
+   EXECUTION FRAMEWORK — New Card-Based Layout
+   ============================================ */
+
+/* Header */
+.ef-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.25rem; }
+.ef-header-left { display: flex; align-items: center; gap: 0.6rem; flex: 1; min-width: 0; }
+.ef-header-right { display: flex; align-items: center; gap: 0.5rem; flex-shrink: 0; }
+.ef-header-actions { display: flex; gap: 0.35rem; }
+.ef-dot { width: 9px; height: 9px; border-radius: 50%; flex-shrink: 0; }
+.ef-title {
+    font-size: 1.25rem; font-weight: 700; margin: 0; outline: none;
+    border-bottom: 2px solid transparent; padding: 2px 4px; border-radius: 4px; cursor: text;
+}
+.ef-active-label { font-size: 0.8rem; font-weight: 500; color: var(--text-secondary); }
+.ef-subtitle {
+    font-size: 0.8rem; color: var(--text-muted); margin-bottom: 1rem;
+    padding-left: 1.1rem; letter-spacing: 0.01em;
+}
+
+/* Session Selector */
+.ef-session-bar {
+    display: flex; gap: 0.4rem; margin-bottom: 1.25rem;
+    padding: 0.35rem; background: #F1F5F9; border-radius: 0.5rem;
+}
+
+/* Pills */
+.ef-pill {
+    padding: 0.4rem 1rem; border-radius: 0.4rem; border: none;
+    font-size: 0.78rem; font-weight: 500; cursor: pointer;
+    background: transparent; color: var(--text-secondary);
+    transition: all 0.15s ease;
+}
+.ef-pill:hover { background: #E2E8F0; }
+.ef-pill-active { background: var(--brand-blue) !important; color: #fff !important; }
+.ef-pill-active-green { background: #16A34A !important; color: #fff !important; }
+.ef-pill-active-red { background: #DC2626 !important; color: #fff !important; }
+.ef-pill-group { display: flex; gap: 0.4rem; flex-wrap: wrap; }
+
+/* Column Titles */
+.ef-col-title {
+    font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.06em;
+    color: var(--text-muted); font-weight: 600; margin-bottom: 0.75rem;
+}
+
+/* Cards */
+.ef-card {
+    background: #F8FAFC; border: 1px solid var(--border-color);
+    border-radius: 0.75rem; padding: 1rem; margin-bottom: 0.75rem;
+}
+.ef-card-head {
+    display: flex; justify-content: space-between; align-items: center;
+    margin-bottom: 0.75rem;
+}
+.ef-card-title {
+    font-size: 0.85rem; font-weight: 600; color: var(--text-primary);
+    display: flex; align-items: center; gap: 0.4rem;
+}
+
+/* Rows */
+.ef-row { display: flex; align-items: center; gap: 0.75rem; }
+.ef-label { font-size: 0.75rem; color: var(--text-muted); font-weight: 500; flex-shrink: 0; }
+.ef-input-sm {
+    width: 80px; padding: 0.35rem 0.5rem; border-radius: 0.375rem;
+    border: 1px solid var(--border-color); font-size: 0.8rem;
+    background: #fff; color: var(--text-primary); outline: none;
+    transition: border-color 0.15s;
+}
+.ef-input-sm:focus { border-color: var(--brand-blue); }
+
+/* Bias Scenario Pills */
+.ef-scenario-pill {
+    display: flex; align-items: center; gap: 0.4rem;
+    padding: 0.5rem 1rem; border-radius: 0.5rem;
+    border: 1px solid var(--border-color); background: #fff;
+    font-size: 0.8rem; font-weight: 500; cursor: pointer;
+    color: var(--text-secondary); transition: all 0.15s ease; flex: 1;
+    justify-content: center;
+}
+.ef-scenario-pill:hover { border-color: var(--brand-blue); color: var(--brand-blue); }
+.ef-scenario-active {
+    background: var(--brand-blue) !important; color: #fff !important;
+    border-color: var(--brand-blue) !important;
+}
+
+/* Target & Invalidation */
+.ef-target-row { display: flex; gap: 0.75rem; }
+.ef-target-item {
+    flex: 1; display: flex; align-items: center; gap: 0.5rem;
+    padding: 0.6rem 0.75rem; border-radius: 0.5rem;
+    border: 1px solid var(--border-color); background: #fff;
+}
+.ef-target-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+.ef-target-label { font-size: 0.78rem; font-weight: 500; color: var(--text-secondary); flex-shrink: 0; }
+.ef-target-green { border-left: 3px solid #16A34A; }
+.ef-target-red { border-left: 3px solid #DC2626; }
+
+/* Entry Triggers with toggles */
+.ef-triggers-list { display: flex; flex-direction: column; gap: 0.5rem; }
+.ef-trigger-row {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 0.5rem 0.6rem; border-radius: 0.5rem;
+    background: #fff; border: 1px solid var(--border-color);
+}
+.ef-toggle-label { display: flex; align-items: center; gap: 0.5rem; flex: 1; min-width: 0; }
+.ef-trigger-dot { width: 7px; height: 7px; border-radius: 50%; flex-shrink: 0; }
+.ef-trigger-text {
+    font-size: 0.82rem; font-weight: 500; color: var(--text-primary);
+    outline: none; cursor: text; padding: 1px 3px; border-radius: 3px;
+}
+.ef-trigger-done { text-decoration: line-through; color: var(--text-muted); }
+.ef-trigger-actions { display: flex; align-items: center; gap: 0.5rem; }
+
+/* Small toggle switch */
+.toggle-sm { width: 34px; height: 18px; }
+.toggle-sm .slider:before { width: 14px; height: 14px; bottom: 2px; left: 2px; }
+.toggle-sm input:checked + .slider:before { transform: translateX(16px); }
+
+/* Upload Zone */
+.ef-upload-zone {
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    height: 6rem; background: #F9FAFB; border: 1.5px dashed var(--border-color);
+    border-radius: 0.5rem; cursor: pointer; color: var(--text-muted);
+    transition: border-color 0.15s;
+}
+.ef-upload-zone:hover { border-color: var(--brand-blue); }
+.ef-upload-placeholder {
+    display: flex; flex-direction: column; align-items: center; gap: 0.3rem;
+    font-size: 0.7rem; color: var(--text-muted);
+}
+
+/* Collapsible Rulebook */
+.ef-collapsible { cursor: default; }
+.ef-summary {
+    cursor: pointer; list-style: none; user-select: none;
+}
+.ef-summary::-webkit-details-marker { display: none; }
+.ef-collapsible[open] .ef-summary i[data-lucide="chevron-down"] { transform: rotate(180deg); }
+
+/* Editable Areas */
+.ef-editable {
+    font-size: 0.82rem; color: var(--text-primary); line-height: 1.7;
+    outline: none; padding: 0.6rem; border: 1px solid transparent;
+    border-radius: 0.375rem; min-height: 50px; white-space: pre-wrap; cursor: text;
+    transition: border-color 0.15s, background 0.15s;
+}
+.ef-editable:focus { border-color: var(--brand-blue); background: #F0F9FF; }
+
+/* Right Column Cards */
+.ef-card-right {
+    background: #F8FAFC; border: 1px solid var(--border-color);
+    border-radius: 0.75rem; padding: 1rem; margin-bottom: 0.75rem;
+}
+.ef-right-title {
+    font-size: 0.8rem; font-weight: 700; color: var(--text-primary);
+    margin-bottom: 0.75rem; letter-spacing: 0.01em;
+}
+
+/* Performance Stats */
+.ef-stats-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem; }
+.ef-stat { display: flex; flex-direction: column; }
+.ef-stat-val { font-size: 1.1rem; font-weight: 700; color: var(--text-primary); }
+.ef-stat-label { font-size: 0.7rem; color: var(--text-muted); margin-top: 2px; }
+.pnl-pos { color: #16A34A; }
+.pnl-neg { color: #DC2626; }
+
+/* Risk Card */
+.ef-risk-card { background: #FFF5F5; border-color: #FECACA; }
+.ef-risk-grid { display: flex; flex-direction: column; gap: 0.6rem; }
+.ef-risk-row {
+    display: flex; justify-content: space-between; align-items: center;
+    font-size: 0.8rem; color: var(--text-secondary);
+}
+.ef-risk-row strong { font-size: 0.95rem; color: var(--text-primary); }
+
+/* Notes Card */
+.ef-notes-card { background: #F0F9FF; border-color: #BFDBFE; }
+.ef-notes-area { min-height: 100px; font-size: 0.8rem; line-height: 1.8; }
+
+/* Mark Complete Button */
+.ef-complete-btn {
+    width: 100%; padding: 0.7rem 1rem; border-radius: 0.5rem;
+    border: none; cursor: pointer; font-size: 0.85rem; font-weight: 600;
+    display: flex; align-items: center; justify-content: center; gap: 0.4rem;
+    background: var(--brand-blue); color: #fff;
+    transition: background 0.15s, transform 0.1s;
+}
+.ef-complete-btn:hover { background: #0891B2; transform: translateY(-1px); }
+
+/* ============================================
    RESPONSIVE LAYOUT CLASSES (Desktop Defaults)
    ============================================ */
 .edge-layout { display: flex; gap: 2rem; align-items: flex-start; }
@@ -1094,6 +1283,12 @@ label {
         gap: 1rem;
     }
     .grid-2-col { grid-template-columns: 1fr; }
+    .ef-session-bar { flex-wrap: wrap; }
+    .ef-pill { padding: 0.35rem 0.75rem; font-size: 0.72rem; }
+    .ef-target-row { flex-direction: column; gap: 0.5rem; }
+    .ef-scenario-pill { padding: 0.4rem 0.5rem; font-size: 0.75rem; }
+    .ef-row { flex-wrap: wrap; }
+    .ef-input-sm { width: 70px; }
 
     /* --- Forms --- */
     .form-row { flex-direction: column; }

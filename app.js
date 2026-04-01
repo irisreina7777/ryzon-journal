@@ -130,6 +130,13 @@ const DEFAULT_PLANS = [
         name: 'Daily Framework',
         active: true,
         lastReviewed: '',
+        session: 'ny',
+        biasDirection: 'neutral',
+        biasScenario: 'continuation',
+        htfRangeHigh: '',
+        htfRangeLow: '',
+        targetZone: '',
+        invalidationLevel: '',
         riskControls: { maxTrades: 2, riskPct: 1, maxLoss: 1000, maxProfit: 5000 },
         criteria: [
             { id: 'c1', text: 'Liquidity sweep confirmation', checked: false },
@@ -144,13 +151,20 @@ const DEFAULT_PLANS = [
         ],
         managementRules: 'Risk is predefined before execution (fixed exposure, no mid-trade adjustment)\nExecute with intent, avoid interference\nInvalidation hit \u2192 immediate exit, no recovery trades',
         exitCriteria: 'Define clear conditions required to close the position.',
-        tradingNotes: 'Bias is a structured thesis, not a prediction\nIf clarity is missing, execution should not happen\nInvalidation resets the process \u2014 no emotional carryover\nTrust is built through data, not belief\nConsistency is the outcome of discipline'
+        tradingNotes: 'Bias is a structured thesis, not a prediction.\nIf clarity is missing, execution should not happen.\nInvalidation resets the process \u2014 no emotional carryover.\nTrust is built through data, not belief.\nConsistency is the outcome of discipline.'
     },
     {
         id: 'plan-2',
         name: 'Weekly Structure',
         active: false,
         lastReviewed: '',
+        session: 'all',
+        biasDirection: 'neutral',
+        biasScenario: 'continuation',
+        htfRangeHigh: '',
+        htfRangeLow: '',
+        targetZone: '',
+        invalidationLevel: '',
         riskControls: { maxTrades: 3, riskPct: 0.5, maxLoss: 500, maxProfit: 2000 },
         criteria: [
             { id: 'w1', text: 'Mark Weekly High/Low', checked: false },
@@ -626,171 +640,236 @@ function renderPlanEditor() {
         return;
     }
 
+    // Ensure new fields exist for older plans
+    plan.session = plan.session || 'ny';
+    plan.biasDirection = plan.biasDirection || 'neutral';
+    plan.biasScenario = plan.biasScenario || 'continuation';
+    plan.htfRangeHigh = plan.htfRangeHigh || '';
+    plan.htfRangeLow = plan.htfRangeLow || '';
+    plan.targetZone = plan.targetZone || '';
+    plan.invalidationLevel = plan.invalidationLevel || '';
+
     const complianceRate = calcCompliance(plan);
     const planTrades = state.trades.length;
     const wins = state.trades.filter(t => t.pnl > 0).length;
-    const winRate = planTrades > 0 ? ((wins / planTrades) * 100).toFixed(1) : '0.00';
+    const winRate = planTrades > 0 ? ((wins / planTrades) * 100).toFixed(1) : '0.0';
     const totalPnl = state.trades.reduce((s, t) => s + t.pnl, 0);
 
+    const sessionLabels = { ny: 'NY Session', london: 'London Session', asia: 'Asia Session', all: 'All Sessions' };
+    const biasLabels = { bullish: 'Bullish Bias', bearish: 'Bearish Bias', neutral: 'Neutral' };
+    const scenarioLabels = { continuation: 'Continuation', pullback: 'Pullback', reversal: 'Reversal' };
+    const statusText = `${sessionLabels[plan.session]} · ${biasLabels[plan.biasDirection]}`;
+
     editor.innerHTML = `
-        <!-- Header -->
-        <div class="edge-header flex-between mb-4">
-            <div class="flex-align" style="gap:0.75rem;">
-                <span style="width:8px;height:8px;border-radius:50%;background:${plan.active ? 'var(--success)' : 'var(--text-muted)'};display:inline-block;"></span>
-                <h2 class="text-xl" id="plan-title" contenteditable="true" spellcheck="false"
-                    style="outline:none; border-bottom:2px solid transparent; padding:2px 4px; border-radius:4px; cursor:text; min-width:60px;"
+        <!-- Plan Header -->
+        <div class="ef-header">
+            <div class="ef-header-left">
+                <span class="ef-dot" style="background:${plan.active ? 'var(--success)' : 'var(--text-muted)'}"></span>
+                <h2 class="ef-title" contenteditable="true" spellcheck="false"
                     onblur="savePlanTitle(this.innerText.trim())"
-                    onfocus="this.style.borderBottom='2px solid var(--brand-blue)'"
-                    onblur2="this.style.borderBottom='2px solid transparent'">${plan.name}</h2>
+                    onfocus="this.style.borderBottomColor='var(--brand-blue)'">${plan.name}</h2>
+                <div class="ef-header-actions">
+                    <button class="btn-icon border" title="Duplicate" onclick="duplicatePlan('${plan.id}')"><i data-lucide="copy" style="width:13px;height:13px;"></i></button>
+                    <button class="btn-icon border" title="Delete" onclick="deletePlan('${plan.id}')"><i data-lucide="trash-2" style="width:13px;height:13px;"></i></button>
+                </div>
             </div>
-            <div class="flex-align" style="gap:0.5rem;">
-                <button class="btn-icon border" title="Delete Plan" onclick="deletePlan('${plan.id}')">
-                    <i data-lucide="trash-2" style="width:14px;height:14px;"></i>
-                </button>
-                <button class="btn-icon border" title="Duplicate Plan" onclick="duplicatePlan('${plan.id}')">
-                    <i data-lucide="copy" style="width:14px;height:14px;"></i>
-                </button>
+            <div class="ef-header-right">
+                <label class="toggle-switch">
+                    <input type="checkbox" ${plan.active ? 'checked' : ''} onchange="togglePlanActive(this.checked)">
+                    <span class="slider round"></span>
+                </label>
+                <span class="ef-active-label">${plan.active ? 'Active' : 'Inactive'}</span>
             </div>
         </div>
+        <div class="ef-subtitle">${statusText}</div>
 
-        <!-- Active Toggle -->
-        <div style="background:#ECFCCB; border-radius:0.5rem; padding:0.875rem 1rem; margin-bottom:1.5rem; display:flex; align-items:center; gap:0.75rem;">
-            <label class="toggle-switch">
-                <input type="checkbox" id="edge-active-toggle" ${plan.active ? 'checked' : ''} onchange="togglePlanActive(this.checked)">
-                <span class="slider round"></span>
-            </label>
-            <span style="font-weight:500; font-size:0.875rem;">${plan.active ? 'Active' : 'Inactive'}</span>
-            <i data-lucide="info" style="width:14px;height:14px;color:var(--text-muted);"></i>
+        <!-- Session Selector -->
+        <div class="ef-session-bar">
+            ${['ny','london','asia','all'].map(s => `
+                <button class="ef-pill ${plan.session === s ? 'ef-pill-active' : ''}" onclick="saveQuickField('session','${s}')">${s === 'ny' ? 'NY' : s === 'london' ? 'London' : s === 'asia' ? 'Asia' : 'All'}</button>
+            `).join('')}
         </div>
 
         <!-- Two Column Grid -->
         <div class="edge-grid">
-            <!-- LEFT COLUMN -->
-            <div class="edge-left pr-8">
+            <!-- LEFT: EXECUTION FLOW -->
+            <div class="edge-left">
+                <h4 class="ef-col-title">Execution Flow</h4>
 
-                <!-- Charting Process -->
-                <div class="edge-section mb-6">
-                    <div class="flex-between mb-3">
-                        <label class="section-label"><i data-lucide="bar-chart-2" style="width:14px;height:14px;margin-right:6px;"></i> Market Structuring</label>
-                        <button class="add-row-btn" onclick="addChartingStep()"><i data-lucide="plus" style="width:12px;height:12px;"></i> Add Step</button>
+                <!-- Market Context -->
+                <div class="ef-card">
+                    <div class="ef-card-head">
+                        <span class="ef-card-title"><i data-lucide="activity" style="width:14px;height:14px;"></i> Market Context</span>
                     </div>
-                    <ol class="numbered-list text-sm text-primary" style="list-style:none; padding:0; display:flex; flex-direction:column; gap:0.5rem;" id="charting-steps">
-                        ${plan.chartingSteps.map((step, i) => `
-                            <li style="display:flex; align-items:flex-start; gap:0.5rem;">
-                                <span class="num-bubble" style="flex-shrink:0;">${i+1}</span>
-                                <span contenteditable="true" spellcheck="false" class="editable-text" style="flex:1; outline:none; cursor:text; padding:2px 4px; border-radius:4px;" onblur="saveChartingStep(${i}, this.innerText.trim())">${step}</span>
-                                <button class="delete-row-btn" onclick="deleteChartingStep(${i})" title="Delete step"><i data-lucide="x" style="width:12px;height:12px;"></i></button>
-                            </li>`).join('')}
-                    </ol>
-                </div>
-
-                <!-- Entry Criteria -->
-                <div class="edge-section mb-6">
-                    <div class="flex-between mb-3">
-                        <label class="section-label"><i data-lucide="check-circle-2" style="width:14px;height:14px;margin-right:6px;"></i> Entry Triggers</label>
-                        <button class="add-row-btn" onclick="addCriteria()"><i data-lucide="plus" style="width:12px;height:12px;"></i> Add Trigger</button>
+                    <div class="ef-row" style="gap:0.5rem; margin-bottom:0.75rem;">
+                        <span class="ef-label">HTF Range</span>
+                        <input type="text" class="ef-input-sm" placeholder="Low" value="${plan.htfRangeLow}" onblur="saveQuickField('htfRangeLow', this.value)">
+                        <span style="color:var(--text-muted); font-size:0.75rem;">–</span>
+                        <input type="text" class="ef-input-sm" placeholder="High" value="${plan.htfRangeHigh}" onblur="saveQuickField('htfRangeHigh', this.value)">
                     </div>
-                    <div style="display:flex; flex-direction:column; gap:0.5rem;" id="criteria-list">
-                        ${plan.criteria.map(c => `
-                            <div style="display:flex; align-items:center; gap:0.5rem;" data-criteria-id="${c.id}">
-                                <input type="checkbox" ${c.checked ? 'checked' : ''} onchange="saveCriteriaCheck('${c.id}', this.checked)" style="width:16px;height:16px;cursor:pointer;accent-color:var(--brand-blue);">
-                                <span contenteditable="true" spellcheck="false" class="editable-text criteria-name" style="flex:1; font-weight:500; font-size:0.875rem; cursor:text; outline:none; padding:2px 4px; border-radius:4px; ${c.checked ? 'text-decoration:line-through;color:var(--text-muted);' : ''}"
-                                    onblur="saveCriteriaText('${c.id}', this.innerText.trim())">${c.text}</span>
-                                <button class="delete-row-btn" onclick="deleteCriteria('${c.id}')" title="Remove"><i data-lucide="trash-2" style="width:12px;height:12px;"></i></button>
-                            </div>`).join('')}
-                    </div>
-                </div>
-
-                <!-- Entry Models -->
-                <div class="edge-section mb-6">
-                    <label class="section-label mb-3" style="display:block;"><i data-lucide="image" style="width:14px;height:14px;margin-right:6px;"></i> Entry Models</label>
-                    <div style="display:flex; gap:1rem;">
-                        <div style="flex:1;">
-                            <p style="font-size:0.75rem; color:var(--text-secondary); margin-bottom:0.5rem;">Primary setup reference</p>
-                            <label style="display:flex; align-items:center; justify-content:center; height:7rem; background:#F9FAFB; border:1.5px dashed var(--border-color); border-radius:0.5rem; cursor:pointer; color:var(--text-muted);" title="Click to upload">
-                                <input type="file" accept="image/*" style="display:none;" onchange="previewImage(this, 'img-setup')">
-                                <img id="img-setup" src="" alt="" style="display:none; width:100%; height:100%; object-fit:cover; border-radius:0.5rem;">
-                                <i data-lucide="image" id="img-setup-icon" style="width:24px;height:24px;opacity:0.4;"></i>
-                            </label>
-                        </div>
-                        <div style="flex:1;">
-                            <p style="font-size:0.75rem; color:var(--text-secondary); margin-bottom:0.5rem;">Validated entry examples</p>
-                            <label style="display:flex; align-items:center; justify-content:center; height:7rem; background:#F9FAFB; border:1.5px dashed var(--border-color); border-radius:0.5rem; cursor:pointer; color:var(--text-muted);" title="Click to upload">
-                                <input type="file" accept="image/*" style="display:none;" onchange="previewImage(this, 'img-entry')">
-                                <img id="img-entry" src="" alt="" style="display:none; width:100%; height:100%; object-fit:cover; border-radius:0.5rem;">
-                                <i data-lucide="image" id="img-entry-icon" style="width:24px;height:24px;opacity:0.4;"></i>
-                            </label>
+                    <div class="ef-row">
+                        <span class="ef-label">Bias Direction</span>
+                        <div class="ef-pill-group">
+                            <button class="ef-pill ef-pill-bullish ${plan.biasDirection === 'bullish' ? 'ef-pill-active-green' : ''}" onclick="saveQuickField('biasDirection','bullish')">Bullish</button>
+                            <button class="ef-pill ef-pill-bearish ${plan.biasDirection === 'bearish' ? 'ef-pill-active-red' : ''}" onclick="saveQuickField('biasDirection','bearish')">Bearish</button>
+                            <button class="ef-pill ${plan.biasDirection === 'neutral' ? 'ef-pill-active' : ''}" onclick="saveQuickField('biasDirection','neutral')">Neutral</button>
                         </div>
                     </div>
                 </div>
 
-                <!-- Trade Management Rules -->
-                <div class="edge-section mb-6">
-                    <label class="section-label mb-3" style="display:block;"><i data-lucide="list" style="width:14px;height:14px;margin-right:6px;"></i> Risk & Trade Discipline</label>
-                    <div contenteditable="true" spellcheck="false" class="editable-area"
-                        style="font-size:0.875rem; color:var(--text-primary); line-height:1.75; outline:none; padding:0.75rem; border:1.5px solid transparent; border-radius:0.5rem; min-height:60px; white-space:pre-wrap; cursor:text;"
-                        onfocus="this.style.borderColor='var(--brand-blue)'; this.style.background='#F8FAFF';"
-                        onblur="this.style.borderColor='transparent'; this.style.background=''; saveField('managementRules', this.innerText.trim())"
-                    >${plan.managementRules}</div>
-                </div>
-
-                <!-- Exit Criteria -->
-                <div class="edge-section mb-6">
-                    <label class="section-label mb-3" style="display:block;"><i data-lucide="external-link" style="width:14px;height:14px;margin-right:6px;"></i> Exit Protocol</label>
-                    <div contenteditable="true" spellcheck="false" class="editable-area"
-                        style="font-size:0.875rem; color:var(--text-secondary); line-height:1.75; outline:none; padding:0.75rem 0.75rem 0.75rem 1rem; border-left:3px solid var(--border-color); border-right:1.5px solid transparent; border-top:1.5px solid transparent; border-bottom:1.5px solid transparent; border-radius:0.5rem; min-height:50px; white-space:pre-wrap; cursor:text;"
-                        onfocus="this.style.borderColor='var(--brand-blue)'; this.style.background='#F8FAFF';"
-                        onblur="this.style.borderColor='transparent'; this.style.borderLeftColor='var(--border-color)'; this.style.background=''; saveField('exitCriteria', this.innerText.trim())"
-                    >${plan.exitCriteria}</div>
-                </div>
-
-                <!-- Trading Notes -->
-                <div class="edge-section mb-6">
-                    <label class="section-label mb-3" style="display:block;"><i data-lucide="edit-3" style="width:14px;height:14px;margin-right:6px;"></i> Trader Notes</label>
-                    <div contenteditable="true" spellcheck="false" class="editable-area"
-                        style="font-size:0.875rem; color:var(--text-primary); line-height:1.75; outline:none; padding:0.75rem; border:1.5px solid transparent; border-radius:0.5rem; min-height:80px; white-space:pre-wrap; cursor:text;"
-                        onfocus="this.style.borderColor='var(--brand-blue)'; this.style.background='#F8FAFF';"
-                        onblur="this.style.borderColor='transparent'; this.style.background=''; saveField('tradingNotes', this.innerText.trim())"
-                    >${plan.tradingNotes}</div>
-                </div>
-
-                <!-- Mark as Reviewed -->
-                <div style="display:flex; align-items:center; gap:1rem; margin-top:2rem; padding-top:1rem; border-top:1px solid var(--border-color);">
-                    <button class="btn btn-purple" onclick="markReviewed()">
-                        <i data-lucide="check" style="width:14px;height:14px;"></i> Mark Session Complete
-                    </button>
-                    <span id="reviewed-timestamp" style="font-size:0.75rem; color:var(--text-muted);">${plan.lastReviewed || ''}</span>
-                </div>
-            </div>
-
-            <!-- RIGHT COLUMN -->
-            <div class="edge-right">
-                <!-- Plan Stats -->
-                <div style="background:#F9FAFB; border:1px solid var(--border-color); border-radius:0.75rem; padding:1.25rem; margin-bottom:1rem;">
-                    <h4 style="font-size:0.7rem; text-transform:uppercase; letter-spacing:0.05em; color:var(--text-muted); font-weight:600; margin-bottom:1rem;">Performance Metrics</h4>
-                    <div style="display:grid; grid-template-columns:1fr 1fr; gap:1rem;">
-                        <div><p style="font-size:1.125rem; font-weight:700;">${planTrades}</p><p style="font-size:0.75rem; color:var(--text-secondary); margin-top:2px;">Trades Executed</p></div>
-                        <div><p style="font-size:1.125rem; font-weight:700;">${winRate}%</p><p style="font-size:0.75rem; color:var(--text-secondary); margin-top:2px;">Win Rate</p></div>
-                        <div><p style="font-size:1.125rem; font-weight:700;">${totalPnl >= 0 ? '+' : ''}$${Math.abs(totalPnl).toFixed(2)}</p><p style="font-size:0.75rem; color:var(--text-secondary); margin-top:2px;">Net Return</p></div>
-                        <div><p style="font-size:1.125rem; font-weight:700;">${complianceRate}%</p><p style="font-size:0.75rem; color:var(--text-secondary); margin-top:2px;">Rule Adherence</p></div>
+                <!-- Bias Scenario -->
+                <div class="ef-card">
+                    <div class="ef-card-head">
+                        <span class="ef-card-title"><i data-lucide="compass" style="width:14px;height:14px;"></i> Bias Scenario</span>
                     </div>
-                </div>
-
-                <!-- Risk Controls -->
-                <div style="background:#FFF5F5; border:1px solid #FECACA; border-radius:0.75rem; padding:1.25rem;">
-                    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1rem;">
-                        <h4 style="font-size:0.7rem; text-transform:uppercase; letter-spacing:0.05em; color:var(--text-muted); font-weight:600;">Risk Parameters</h4>
-                        <button onclick="openRiskModal()" style="background:none; border:none; cursor:pointer; color:var(--text-muted); display:flex; align-items:center; justify-content:center; padding:4px; border-radius:4px;" title="Edit Risk Controls">
-                            <i data-lucide="edit-2" style="width:14px;height:14px;"></i>
+                    <div class="ef-pill-group" style="gap:0.5rem;">
+                        <button class="ef-scenario-pill ${plan.biasScenario === 'continuation' ? 'ef-scenario-active' : ''}" onclick="saveQuickField('biasScenario','continuation')">
+                            <i data-lucide="trending-up" style="width:14px;height:14px;"></i> Continuation
+                        </button>
+                        <button class="ef-scenario-pill ${plan.biasScenario === 'pullback' ? 'ef-scenario-active' : ''}" onclick="saveQuickField('biasScenario','pullback')">
+                            <i data-lucide="corner-down-left" style="width:14px;height:14px;"></i> Pullback
+                        </button>
+                        <button class="ef-scenario-pill ${plan.biasScenario === 'reversal' ? 'ef-scenario-active' : ''}" onclick="saveQuickField('biasScenario','reversal')">
+                            <i data-lucide="refresh-cw" style="width:14px;height:14px;"></i> Reversal
                         </button>
                     </div>
-                    <div style="display:grid; grid-template-columns:1fr 1fr; gap:1rem;" id="risk-values">
-                        <div><p style="font-size:1.125rem; font-weight:700;">${plan.riskControls.maxTrades}</p><p style="font-size:0.75rem; color:var(--text-secondary); margin-top:2px;">Max Trades / Day</p></div>
-                        <div><p style="font-size:1.125rem; font-weight:700;">$${plan.riskControls.maxLoss.toLocaleString()}</p><p style="font-size:0.75rem; color:var(--text-secondary); margin-top:2px;">Max Daily Drawdown</p></div>
-                        <div><p style="font-size:1.125rem; font-weight:700;">$${plan.riskControls.maxProfit.toLocaleString()}</p><p style="font-size:0.75rem; color:var(--text-secondary); margin-top:2px;">Max Daily Target</p></div>
-                        <div><p style="font-size:1.125rem; font-weight:700;">${plan.riskControls.riskPct}%</p><p style="font-size:0.75rem; color:var(--text-secondary); margin-top:2px;">Risk per Position</p></div>
+                </div>
+
+                <!-- Target & Invalidation -->
+                <div class="ef-card">
+                    <div class="ef-card-head">
+                        <span class="ef-card-title"><i data-lucide="target" style="width:14px;height:14px;"></i> Target & Invalidation</span>
+                    </div>
+                    <div class="ef-target-row">
+                        <div class="ef-target-item ef-target-green">
+                            <span class="ef-target-dot" style="background:#16A34A;"></span>
+                            <span class="ef-target-label">Target Zone</span>
+                            <input type="text" class="ef-input-sm" placeholder="Price" value="${plan.targetZone}" onblur="saveQuickField('targetZone', this.value)">
+                        </div>
+                        <div class="ef-target-item ef-target-red">
+                            <span class="ef-target-dot" style="background:#DC2626;"></span>
+                            <span class="ef-target-label">Invalidation</span>
+                            <input type="text" class="ef-input-sm" placeholder="Price" value="${plan.invalidationLevel}" onblur="saveQuickField('invalidationLevel', this.value)">
+                        </div>
                     </div>
                 </div>
+
+                <!-- Entry Triggers -->
+                <div class="ef-card">
+                    <div class="ef-card-head">
+                        <span class="ef-card-title"><i data-lucide="zap" style="width:14px;height:14px;"></i> Entry Triggers</span>
+                        <button class="add-row-btn" onclick="addCriteria()"><i data-lucide="plus" style="width:12px;height:12px;"></i> Add Trigger</button>
+                    </div>
+                    <div class="ef-triggers-list">
+                        ${plan.criteria.map(c => `
+                            <div class="ef-trigger-row" data-criteria-id="${c.id}">
+                                <label class="ef-toggle-label">
+                                    <span class="ef-trigger-dot" style="background:${c.checked ? '#16A34A' : 'var(--text-muted)'};"></span>
+                                    <span class="ef-trigger-text ${c.checked ? 'ef-trigger-done' : ''}"
+                                        contenteditable="true" spellcheck="false"
+                                        onblur="saveCriteriaText('${c.id}', this.innerText.trim())">${c.text}</span>
+                                </label>
+                                <div class="ef-trigger-actions">
+                                    <label class="toggle-switch toggle-sm">
+                                        <input type="checkbox" ${c.checked ? 'checked' : ''} onchange="saveCriteriaCheck('${c.id}', this.checked)">
+                                        <span class="slider round"></span>
+                                    </label>
+                                    <button class="delete-row-btn" onclick="deleteCriteria('${c.id}')" title="Remove"><i data-lucide="x" style="width:11px;height:11px;"></i></button>
+                                </div>
+                            </div>
+                        `).join('')}
+                    </div>
+                </div>
+
+                <!-- Execution Model -->
+                <div class="ef-card">
+                    <div class="ef-card-head">
+                        <span class="ef-card-title"><i data-lucide="image" style="width:14px;height:14px;"></i> Execution Model</span>
+                    </div>
+                    <div style="display:flex; gap:0.75rem;">
+                        <div style="flex:1;">
+                            <p class="ef-label" style="margin-bottom:0.4rem;">Primary setup reference</p>
+                            <label class="ef-upload-zone">
+                                <input type="file" accept="image/*" style="display:none;" onchange="previewImage(this, 'img-setup')">
+                                <img id="img-setup" src="" alt="" style="display:none; width:100%; height:100%; object-fit:cover; border-radius:0.5rem;">
+                                <span id="img-setup-icon" class="ef-upload-placeholder"><i data-lucide="upload" style="width:18px;height:18px;opacity:0.3;"></i><span>Drop to upload</span></span>
+                            </label>
+                        </div>
+                        <div style="flex:1;">
+                            <p class="ef-label" style="margin-bottom:0.4rem;">Validated entry examples</p>
+                            <label class="ef-upload-zone">
+                                <input type="file" accept="image/*" style="display:none;" onchange="previewImage(this, 'img-entry')">
+                                <img id="img-entry" src="" alt="" style="display:none; width:100%; height:100%; object-fit:cover; border-radius:0.5rem;">
+                                <span id="img-entry-icon" class="ef-upload-placeholder"><i data-lucide="upload" style="width:18px;height:18px;opacity:0.3;"></i><span>Drop to upload</span></span>
+                            </label>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Collapsible Rulebook -->
+                <details class="ef-card ef-collapsible">
+                    <summary class="ef-card-head ef-summary">
+                        <span class="ef-card-title"><i data-lucide="book" style="width:14px;height:14px;"></i> Rulebook</span>
+                        <i data-lucide="chevron-down" style="width:14px;height:14px; color:var(--text-muted);"></i>
+                    </summary>
+                    <div style="padding-top:0.75rem;">
+                        <p class="ef-label" style="margin-bottom:0.4rem;">Risk & Trade Discipline</p>
+                        <div contenteditable="true" spellcheck="false" class="ef-editable"
+                            onblur="saveField('managementRules', this.innerText.trim())">${plan.managementRules}</div>
+                        <p class="ef-label" style="margin:0.75rem 0 0.4rem;">Exit Protocol</p>
+                        <div contenteditable="true" spellcheck="false" class="ef-editable"
+                            onblur="saveField('exitCriteria', this.innerText.trim())">${plan.exitCriteria}</div>
+                    </div>
+                </details>
+            </div>
+
+            <!-- RIGHT: DECISION PANEL -->
+            <div class="edge-right">
+                <h4 class="ef-col-title">Decision Panel</h4>
+
+                <!-- Performance Metrics -->
+                <div class="ef-card-right">
+                    <h4 class="ef-right-title">Performance</h4>
+                    <div class="ef-stats-grid">
+                        <div class="ef-stat"><span class="ef-stat-val">${planTrades}</span><span class="ef-stat-label">Trades Executed</span></div>
+                        <div class="ef-stat"><span class="ef-stat-val">${winRate}%</span><span class="ef-stat-label">Win Rate</span></div>
+                        <div class="ef-stat"><span class="ef-stat-val ${totalPnl >= 0 ? 'pnl-pos' : 'pnl-neg'}">${totalPnl >= 0 ? '+' : ''}$${Math.abs(totalPnl).toFixed(2)}</span><span class="ef-stat-label">Net Return</span></div>
+                        <div class="ef-stat"><span class="ef-stat-val">${complianceRate}%</span><span class="ef-stat-label">Rule Adherence</span></div>
+                    </div>
+                </div>
+
+                <!-- Risk Parameters -->
+                <div class="ef-card-right ef-risk-card">
+                    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:0.75rem;">
+                        <h4 class="ef-right-title" style="margin:0;">Risk</h4>
+                        <button onclick="openRiskModal()" class="btn-icon" style="color:var(--text-muted);" title="Edit"><i data-lucide="edit-2" style="width:13px;height:13px;"></i></button>
+                    </div>
+                    <div class="ef-risk-grid">
+                        <div class="ef-risk-row"><span>Max Trades / Day</span><strong>${plan.riskControls.maxTrades}</strong></div>
+                        <div class="ef-risk-row"><span>Max Daily Drawdown</span><strong>$${plan.riskControls.maxLoss.toLocaleString()}</strong></div>
+                        <div class="ef-risk-row"><span>Max Daily Target</span><strong>$${plan.riskControls.maxProfit.toLocaleString()}</strong></div>
+                        <div class="ef-risk-row"><span>Risk per Position</span><strong>${plan.riskControls.riskPct}%</strong></div>
+                    </div>
+                </div>
+
+                <!-- Mark Complete -->
+                <div style="text-align:center; margin-bottom:1rem;">
+                    <span id="reviewed-timestamp" style="font-size:0.7rem; color:var(--text-muted); display:block; margin-bottom:0.5rem;">${plan.lastReviewed || ''}</span>
+                </div>
+
+                <!-- Key Notes -->
+                <div class="ef-card-right ef-notes-card">
+                    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:0.75rem;">
+                        <h4 class="ef-right-title" style="margin:0;">Key Notes</h4>
+                    </div>
+                    <div contenteditable="true" spellcheck="false" class="ef-editable ef-notes-area"
+                        onblur="saveField('tradingNotes', this.innerText.trim())">${plan.tradingNotes}</div>
+                </div>
+
+                <!-- Mark Session Complete -->
+                <button class="ef-complete-btn" onclick="markReviewed()">
+                    <i data-lucide="check" style="width:14px;height:14px;"></i> Mark Session Complete
+                </button>
             </div>
         </div>
     `;
@@ -810,6 +889,14 @@ function savePlanTitle(newName) {
 function togglePlanActive(checked) {
     const plan = getActivePlan();
     plan.active = checked;
+    saveState();
+    renderEdge();
+}
+
+// --- QUICK FIELD SAVE (session, bias, scenario, target, etc.) ---
+function saveQuickField(field, value) {
+    const plan = getActivePlan();
+    plan[field] = value;
     saveState();
     renderEdge();
 }
