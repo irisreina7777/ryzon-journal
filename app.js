@@ -689,6 +689,63 @@ function renderPlanEditor() {
             `).join('')}
         </div>
 
+        <!-- Archived Sessions -->
+        ${(plan.sessionHistory && plan.sessionHistory.length > 0) ? `
+        <div class="ef-archive-section">
+            <div class="ef-archive-header" onclick="document.getElementById('archive-list').classList.toggle('hidden')">
+                <span class="ef-archive-title"><i data-lucide="archive" style="width:13px;height:13px;"></i> Past Sessions (${plan.sessionHistory.length})</span>
+                <i data-lucide="chevron-down" style="width:13px;height:13px;color:var(--text-muted);"></i>
+            </div>
+            <div id="archive-list" class="ef-archive-list hidden">
+                ${[...plan.sessionHistory].reverse().map((s, idx) => {
+                    const realIdx = plan.sessionHistory.length - 1 - idx;
+                    const biasColor = s.biasDirection === 'bullish' ? '#16A34A' : s.biasDirection === 'bearish' ? '#DC2626' : 'var(--text-muted)';
+                    const biasLabel = s.biasDirection ? s.biasDirection.charAt(0).toUpperCase() + s.biasDirection.slice(1) : 'Neutral';
+                    const sessionLabel = s.session === 'ny' ? 'NY' : s.session === 'london' ? 'London' : s.session === 'asia' ? 'Asia' : 'All';
+                    const scenarioLabel = s.biasScenario ? s.biasScenario.charAt(0).toUpperCase() + s.biasScenario.slice(1) : '-';
+                    const priceLabel = s.pricePosition ? s.pricePosition.charAt(0).toUpperCase() + s.pricePosition.slice(1) : '-';
+                    const triggersOn = (s.triggers || []).filter(t => t.checked).length;
+                    const triggersTotal = (s.triggers || []).length;
+                    return `
+                    <div class="ef-archive-card" onclick="toggleArchiveExpand(${realIdx}, event)">
+                        <div class="ef-archive-summary">
+                            <div class="ef-archive-left">
+                                <span class="ef-archive-dot" style="background:${biasColor};"></span>
+                                <span class="ef-archive-date">${s.date} · ${s.time}</span>
+                                <span class="ef-archive-tag">${sessionLabel}</span>
+                                <span class="ef-archive-tag">${biasLabel}</span>
+                                <span class="ef-archive-tag">${scenarioLabel}</span>
+                            </div>
+                            <div class="ef-archive-right-actions">
+                                <span class="ef-archive-triggers">${triggersOn}/${triggersTotal} triggers</span>
+                                <button class="delete-row-btn" onclick="deleteSession(${realIdx}, event)" title="Delete"><i data-lucide="x" style="width:11px;height:11px;"></i></button>
+                            </div>
+                        </div>
+                        <div class="ef-archive-expand hidden" id="archive-detail-${realIdx}">
+                            <div class="ef-archive-detail-grid">
+                                <div><span class="journal-detail-label">Price Position</span><span class="journal-detail-value">${priceLabel}</span></div>
+                                <div><span class="journal-detail-label">Bias</span><span class="journal-detail-value" style="color:${biasColor};">${biasLabel}</span></div>
+                                <div><span class="journal-detail-label">Scenario</span><span class="journal-detail-value">${scenarioLabel}</span></div>
+                                <div><span class="journal-detail-label">Target</span><span class="journal-detail-value">${s.targetZone || '—'}</span></div>
+                                <div><span class="journal-detail-label">Invalidation</span><span class="journal-detail-value">${s.invalidationLevel || '—'}</span></div>
+                                <div><span class="journal-detail-label">Triggers</span><span class="journal-detail-value">${triggersOn} of ${triggersTotal}</span></div>
+                            </div>
+                            ${(s.triggers && s.triggers.length > 0) ? `
+                            <div class="ef-archive-triggers-list">
+                                ${s.triggers.map(t => `
+                                    <div class="ef-archive-trigger-item">
+                                        <span class="ef-trigger-dot" style="background:${t.checked ? '#16A34A' : '#D1D5DB'};"></span>
+                                        <span style="font-size:0.78rem; ${t.checked ? 'color:var(--text-primary);' : 'color:var(--text-muted); text-decoration:line-through;'}">${t.text}</span>
+                                    </div>
+                                `).join('')}
+                            </div>` : ''}
+                        </div>
+                    </div>`;
+                }).join('')}
+            </div>
+        </div>
+        ` : ''}
+
         <!-- Two Column Grid -->
         <div class="edge-grid">
             <!-- LEFT: EXECUTION FLOW -->
@@ -960,6 +1017,28 @@ function showSessionToast(message) {
         toast.classList.add('session-toast-out');
         setTimeout(() => toast.remove(), 350);
     }, 3500);
+}
+
+// --- ARCHIVE EXPAND/DELETE ---
+function toggleArchiveExpand(idx, event) {
+    // Don't toggle if clicking delete button
+    if (event && event.target.closest('.delete-row-btn')) return;
+    const detail = document.getElementById('archive-detail-' + idx);
+    if (!detail) return;
+    const isOpen = !detail.classList.contains('hidden');
+    // Close all others
+    document.querySelectorAll('.ef-archive-expand').forEach(d => d.classList.add('hidden'));
+    if (!isOpen) detail.classList.remove('hidden');
+}
+
+function deleteSession(idx, event) {
+    event.stopPropagation();
+    if (!confirm('Delete this archived session?')) return;
+    const plan = getActivePlan();
+    if (!plan || !plan.sessionHistory) return;
+    plan.sessionHistory.splice(idx, 1);
+    saveState();
+    renderEdge();
 }
 
 // --- CHARTING STEPS ---

@@ -1165,6 +1165,65 @@ label {
 }
 .ef-complete-btn:hover { background: #0891B2; transform: translateY(-1px); }
 
+/* ============================================
+   Archived Sessions Stack
+   ============================================ */
+.ef-archive-section { margin-bottom: 1rem; }
+.ef-archive-header {
+    display: flex; justify-content: space-between; align-items: center;
+    padding: 0.5rem 0.75rem; cursor: pointer; border-radius: 0.5rem;
+    background: #F1F5F9; transition: background 0.12s;
+}
+.ef-archive-header:hover { background: #E2E8F0; }
+.ef-archive-title {
+    font-size: 0.75rem; font-weight: 600; color: var(--text-secondary);
+    display: flex; align-items: center; gap: 0.4rem;
+}
+.ef-archive-list {
+    display: flex; flex-direction: column; gap: 0.4rem;
+    margin-top: 0.5rem; max-height: 300px; overflow-y: auto;
+}
+.ef-archive-card {
+    background: #fff; border: 1px solid var(--border-color);
+    border-radius: 0.5rem; padding: 0.6rem 0.75rem;
+    cursor: pointer; transition: border-color 0.12s, box-shadow 0.12s;
+}
+.ef-archive-card:hover { border-color: var(--brand-blue); box-shadow: 0 2px 8px rgba(0,0,0,0.06); }
+.ef-archive-summary {
+    display: flex; justify-content: space-between; align-items: center;
+    gap: 0.5rem;
+}
+.ef-archive-left { display: flex; align-items: center; gap: 0.4rem; flex-wrap: wrap; }
+.ef-archive-dot { width: 7px; height: 7px; border-radius: 50%; flex-shrink: 0; }
+.ef-archive-date { font-size: 0.72rem; color: var(--text-muted); font-weight: 500; }
+.ef-archive-tag {
+    font-size: 0.65rem; font-weight: 600; text-transform: uppercase;
+    letter-spacing: 0.03em; padding: 0.15rem 0.4rem;
+    background: #F1F5F9; border-radius: 0.25rem; color: var(--text-secondary);
+}
+.ef-archive-right-actions { display: flex; align-items: center; gap: 0.4rem; flex-shrink: 0; }
+.ef-archive-triggers { font-size: 0.68rem; color: var(--text-muted); white-space: nowrap; }
+.ef-archive-expand {
+    margin-top: 0.6rem; padding-top: 0.6rem;
+    border-top: 1px solid var(--border-color);
+}
+.ef-archive-detail-grid {
+    display: grid; grid-template-columns: repeat(3, 1fr);
+    gap: 0.5rem; margin-bottom: 0.5rem;
+}
+.ef-archive-detail-grid > div { display: flex; flex-direction: column; gap: 1px; }
+.ef-archive-triggers-list {
+    display: flex; flex-direction: column; gap: 0.3rem;
+    padding-top: 0.5rem; border-top: 1px solid var(--border-color);
+}
+.ef-archive-trigger-item { display: flex; align-items: center; gap: 0.4rem; }
+.delete-row-btn {
+    background: none; border: none; cursor: pointer; padding: 3px;
+    color: var(--text-muted); border-radius: 4px; display: flex;
+    align-items: center; justify-content: center; transition: color 0.12s;
+}
+.delete-row-btn:hover { color: #DC2626; }
+
 /* Session Toast */
 .session-toast {
     position: fixed; top: 1.5rem; right: 1.5rem; z-index: 10001;
