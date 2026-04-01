@@ -853,10 +853,8 @@ function renderPlanEditor() {
                     </div>
                 </div>
 
-                <!-- Mark Complete -->
-                <div style="text-align:center; margin-bottom:1rem;">
-                    <span id="reviewed-timestamp" style="font-size:0.7rem; color:var(--text-muted); display:block; margin-bottom:0.5rem;">${plan.lastReviewed || ''}</span>
-                </div>
+
+
 
                 <!-- Key Notes -->
                 <div class="ef-card-right ef-notes-card">
@@ -868,6 +866,8 @@ function renderPlanEditor() {
                 </div>
 
                 <!-- Mark Session Complete -->
+                <div class="ef-session-count">${plan.lastReviewed || ''}</div>
+                <div class="ef-session-count">${(plan.sessionHistory || []).length} session${(plan.sessionHistory || []).length !== 1 ? 's' : ''} archived</div>
                 <button class="ef-complete-btn" onclick="markReviewed()">
                     <i data-lucide="check" style="width:14px;height:14px;"></i> Mark Session Complete
                 </button>
@@ -905,11 +905,61 @@ function saveQuickField(field, value) {
 // --- MARK REVIEWED ---
 function markReviewed() {
     const plan = getActivePlan();
+    if (!plan) return;
     const now = new Date();
-    plan.lastReviewed = `Session completed at ${now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}`;
+    const timeStr = now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+    const dateStr = now.toLocaleDateString();
+
+    // Archive current session snapshot
+    if (!plan.sessionHistory) plan.sessionHistory = [];
+    plan.sessionHistory.push({
+        date: dateStr,
+        time: timeStr,
+        session: plan.session || 'ny',
+        biasDirection: plan.biasDirection || 'neutral',
+        biasScenario: plan.biasScenario || 'continuation',
+        pricePosition: plan.pricePosition || 'equilibrium',
+        targetZone: plan.targetZone || '',
+        invalidationLevel: plan.invalidationLevel || '',
+        triggers: (plan.criteria || []).map(c => ({ text: c.text, checked: c.checked })),
+        completedAt: now.toISOString()
+    });
+
+    // Reset execution flow for a new session
+    plan.biasDirection = 'neutral';
+    plan.biasScenario = 'continuation';
+    plan.pricePosition = 'equilibrium';
+    plan.targetZone = '';
+    plan.invalidationLevel = '';
+    plan.criteria.forEach(c => c.checked = false);
+    plan.lastReviewed = `Last session completed: ${dateStr} at ${timeStr}`;
+
     saveState();
-    const ts = document.getElementById('reviewed-timestamp');
-    if (ts) ts.textContent = plan.lastReviewed;
+
+    // Show success toast
+    showSessionToast(`Session archived — ${dateStr} at ${timeStr}`);
+
+    // Re-render with clean slate
+    renderEdge();
+}
+
+function showSessionToast(message) {
+    // Remove existing toast if any
+    const existing = document.getElementById('session-toast');
+    if (existing) existing.remove();
+
+    const toast = document.createElement('div');
+    toast.id = 'session-toast';
+    toast.className = 'session-toast';
+    toast.innerHTML = `<i data-lucide="check-circle" style="width:16px;height:16px;"></i> ${message}`;
+    document.body.appendChild(toast);
+    lucide.createIcons();
+
+    // Auto-remove after 3.5s
+    setTimeout(() => {
+        toast.classList.add('session-toast-out');
+        setTimeout(() => toast.remove(), 350);
+    }, 3500);
 }
 
 // --- CHARTING STEPS ---
