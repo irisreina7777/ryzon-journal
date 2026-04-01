@@ -908,7 +908,137 @@ function updateUI() {
     renderJournal();
     calculateAndRenderMetrics();
     renderRuleBreaks();
+    renderPnlCalendar();
     lucide.createIcons();
+}
+
+// ============================================================
+// P/L CALENDAR HEATMAP
+// ============================================================
+let pnlCalYear = new Date().getFullYear();
+let pnlCalMonth = new Date().getMonth(); // 0-indexed
+
+function changePnlMonth(delta) {
+    pnlCalMonth += delta;
+    if (pnlCalMonth > 11) { pnlCalMonth = 0; pnlCalYear++; }
+    if (pnlCalMonth < 0) { pnlCalMonth = 11; pnlCalYear--; }
+    renderPnlCalendar();
+}
+
+function renderPnlCalendar() {
+    const grid = document.getElementById('pnl-calendar-grid');
+    const monthLabel = document.getElementById('pnl-cal-month');
+    const totalLabel = document.getElementById('pnl-cal-total');
+    if (!grid) return;
+
+    const year = pnlCalYear;
+    const month = pnlCalMonth;
+    const monthNames = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
+    if (monthLabel) monthLabel.textContent = monthNames[month] + ' ' + year;
+
+    // Aggregate trades by date string (YYYY-MM-DD)
+    const dailyPnl = {};
+    state.trades.forEach(t => {
+        const d = new Date(t.date);
+        const key = d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
+        if (!dailyPnl[key]) dailyPnl[key] = { pnl: 0, count: 0 };
+        dailyPnl[key].pnl += t.pnl;
+        dailyPnl[key].count++;
+    });
+
+    // Build calendar
+    const firstDay = new Date(year, month, 1).getDay(); // 0=Sun
+    const daysInMonth = new Date(year, month + 1, 0).getDate();
+    const today = new Date();
+    const todayKey = today.getFullYear() + '-' + String(today.getMonth() + 1).padStart(2, '0') + '-' + String(today.getDate()).padStart(2, '0');
+
+    grid.innerHTML = '';
+
+    // Headers
+    const dayHeaders = ['Su', 'Mo', 'Tu', 'We', 'Th', 'Fr', 'Sa', ''];
+    dayHeaders.forEach((h, i) => {
+        const hdr = document.createElement('div');
+        hdr.className = 'pnl-cal-header';
+        hdr.textContent = i < 7 ? h : 'Week';
+        grid.appendChild(hdr);
+    });
+
+    // Track weekly data
+    let weekPnl = 0, weekTrades = 0, weekNum = 1;
+    let monthTotalPnl = 0;
+
+    // Previous month padding
+    const prevMonthDays = new Date(year, month, 0).getDate();
+    for (let i = 0; i < firstDay; i++) {
+        const dayNum = prevMonthDays - firstDay + 1 + i;
+        const cell = document.createElement('div');
+        cell.className = 'pnl-cal-day pnl-other-month';
+        cell.innerHTML = `<span class="pnl-cal-day-num">${dayNum}</span>`;
+        grid.appendChild(cell);
+    }
+
+    // Current month days
+    for (let d = 1; d <= daysInMonth; d++) {
+        const dateKey = year + '-' + String(month + 1).padStart(2, '0') + '-' + String(d).padStart(2, '0');
+        const dayData = dailyPnl[dateKey];
+        const dayOfWeek = (firstDay + d - 1) % 7;
+
+        const cell = document.createElement('div');
+        let cls = 'pnl-cal-day';
+        if (dateKey === todayKey) cls += ' pnl-today';
+
+        let inner = `<span class="pnl-cal-day-num">${d}</span>`;
+
+        if (dayData) {
+            const sign = dayData.pnl >= 0 ? '' : '-';
+            const pnlClass = dayData.pnl >= 0 ? 'pnl-positive' : 'pnl-negative';
+            cls += dayData.pnl >= 0 ? ' pnl-profit' : ' pnl-loss';
+            inner += `<span class="pnl-cal-pnl ${pnlClass}">${sign}$${Math.abs(dayData.pnl).toFixed(2)}</span>`;
+            inner += `<span class="pnl-cal-trades">${dayData.count} trade${dayData.count > 1 ? 's' : ''}</span>`;
+            weekPnl += dayData.pnl;
+            weekTrades += dayData.count;
+            monthTotalPnl += dayData.pnl;
+        }
+
+        cell.className = cls;
+        cell.innerHTML = inner;
+        grid.appendChild(cell);
+
+        // End of week (Saturday) or last day — add weekly summary
+        if (dayOfWeek === 6 || d === daysInMonth) {
+            // If last day and not Saturday, pad remaining cells
+            if (d === daysInMonth && dayOfWeek < 6) {
+                for (let pad = dayOfWeek + 1; pad <= 6; pad++) {
+                    const emptyCell = document.createElement('div');
+                    emptyCell.className = 'pnl-cal-day pnl-other-month';
+                    emptyCell.innerHTML = `<span class="pnl-cal-day-num">${pad - dayOfWeek}</span>`;
+                    grid.appendChild(emptyCell);
+                }
+            }
+
+            const weekCell = document.createElement('div');
+            weekCell.className = 'pnl-cal-week';
+            const wPnlClass = weekPnl >= 0 ? 'pnl-positive' : 'pnl-negative';
+            const wSign = weekPnl >= 0 ? '' : '-';
+            weekCell.innerHTML = `
+                <span class="pnl-cal-week-label">Week ${weekNum}</span>
+                <span class="pnl-cal-week-pnl ${wPnlClass}">${wSign}$${Math.abs(weekPnl).toFixed(2)}</span>
+                <span class="pnl-cal-week-trades">${weekTrades} trades</span>
+            `;
+            grid.appendChild(weekCell);
+            weekNum++;
+            weekPnl = 0;
+            weekTrades = 0;
+        }
+    }
+
+    // Monthly total
+    if (totalLabel) {
+        const sign = monthTotalPnl >= 0 ? '' : '-';
+        const cls = monthTotalPnl >= 0 ? 'pnl-positive' : 'pnl-negative';
+        totalLabel.className = cls;
+        totalLabel.textContent = `Monthly P/L: ${sign}$${Math.abs(monthTotalPnl).toFixed(2)}`;
+    }
 }
 
 function renderJournal() {
