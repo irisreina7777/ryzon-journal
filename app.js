@@ -254,22 +254,25 @@ let currentChartSymbol = 'OANDA:NAS100USD';
 let currentChartLabel = 'NQ';
 let tvWidgetLoaded = false;
 
-// Default symbols (not removable)
-const DEFAULT_CHART_SYMBOLS = [
+// Initial symbols (used only on first load if nothing in localStorage)
+const INITIAL_SYMBOLS = [
     { sym: 'OANDA:NAS100USD', label: 'NQ' },
-    { sym: 'OANDA:SPX500USD', label: 'ES' },
-    { sym: 'FX:EURUSD', label: 'EUR/USD' },
     { sym: 'OANDA:XAUUSD', label: 'XAU/USD' },
-    { sym: 'FX:GBPUSD', label: 'GBP/USD' }
+    { sym: 'FX:EURUSD', label: 'EUR/USD' }
 ];
 
-function getPinnedSymbols() {
-    const raw = localStorage.getItem('ryzon_pinned_symbols');
-    return raw ? JSON.parse(raw) : [];
+function getSymbolList() {
+    const raw = localStorage.getItem('ryzon_symbol_list');
+    if (!raw) {
+        // First time — initialize with defaults
+        localStorage.setItem('ryzon_symbol_list', JSON.stringify(INITIAL_SYMBOLS));
+        return [...INITIAL_SYMBOLS];
+    }
+    return JSON.parse(raw);
 }
 
-function savePinnedSymbols(pins) {
-    localStorage.setItem('ryzon_pinned_symbols', JSON.stringify(pins));
+function saveSymbolList(list) {
+    localStorage.setItem('ryzon_symbol_list', JSON.stringify(list));
 }
 
 function renderSymbolPills() {
@@ -277,34 +280,23 @@ function renderSymbolPills() {
     if (!container) return;
     container.innerHTML = '';
 
-    // Default pills
-    DEFAULT_CHART_SYMBOLS.forEach(s => {
+    const symbols = getSymbolList();
+    symbols.forEach(s => {
         const btn = document.createElement('button');
-        btn.className = 'chart-sym-pill' + (s.sym === currentChartSymbol ? ' chart-sym-active' : '');
+        btn.className = 'chart-sym-pill chart-sym-pinned' + (s.sym === currentChartSymbol ? ' chart-sym-active' : '');
         btn.setAttribute('data-sym', s.sym);
-        btn.textContent = s.label;
-        btn.onclick = () => switchChartSymbol(s.sym, s.label);
-        container.appendChild(btn);
-    });
 
-    // Pinned pills (with × remove button)
-    const pins = getPinnedSymbols();
-    pins.forEach(p => {
-        const btn = document.createElement('button');
-        btn.className = 'chart-sym-pill chart-sym-pinned' + (p.sym === currentChartSymbol ? ' chart-sym-active' : '');
-        btn.setAttribute('data-sym', p.sym);
-        
         const labelSpan = document.createElement('span');
-        labelSpan.textContent = p.label;
+        labelSpan.textContent = s.label;
         btn.appendChild(labelSpan);
 
         const removeX = document.createElement('span');
         removeX.className = 'pin-remove';
         removeX.textContent = '×';
-        removeX.onclick = (e) => { e.stopPropagation(); unpinSymbol(p.sym); };
+        removeX.onclick = (e) => { e.stopPropagation(); removeSymbol(s.sym); };
         btn.appendChild(removeX);
 
-        btn.onclick = () => switchChartSymbol(p.sym, p.label);
+        btn.onclick = () => switchChartSymbol(s.sym, s.label);
         container.appendChild(btn);
     });
 }
@@ -360,36 +352,33 @@ function switchChartSymbol(sym, label) {
 }
 
 function loadCustomSymbol() {
-    const input = document.getElementById('chart-custom-input');
-    const val = input.value.trim().toUpperCase();
-    if (!val) return;
+    const pairInput = document.getElementById('chart-custom-input');
+    const brokerSelect = document.getElementById('chart-broker-select');
+    let pair = pairInput.value.trim().toUpperCase().replace(/\s+/g, '').replace('/', '');
+    if (!pair) return;
 
-    // Check if it's already a default — just switch to it
-    const existing = DEFAULT_CHART_SYMBOLS.find(s => s.sym === val || s.label === val);
-    if (existing) {
-        switchChartSymbol(existing.sym, existing.label);
-        input.value = '';
-        return;
+    const broker = brokerSelect.value;
+    const fullSym = broker + ':' + pair;
+    const label = pairInput.value.trim().toUpperCase();
+
+    // Check if already in list
+    const list = getSymbolList();
+    if (!list.find(s => s.sym === fullSym)) {
+        list.push({ sym: fullSym, label: label });
+        saveSymbolList(list);
     }
 
-    // Pin it if not already pinned
-    const pins = getPinnedSymbols();
-    if (!pins.find(p => p.sym === val)) {
-        pins.push({ sym: val, label: val });
-        savePinnedSymbols(pins);
-    }
-
-    switchChartSymbol(val, val);
-    input.value = '';
+    switchChartSymbol(fullSym, label);
+    pairInput.value = '';
 }
 
-function unpinSymbol(sym) {
-    let pins = getPinnedSymbols();
-    pins = pins.filter(p => p.sym !== sym);
-    savePinnedSymbols(pins);
-    // If we're viewing the unpinned symbol, switch to first default
+function removeSymbol(sym) {
+    let list = getSymbolList();
+    list = list.filter(s => s.sym !== sym);
+    saveSymbolList(list);
     if (currentChartSymbol === sym) {
-        switchChartSymbol(DEFAULT_CHART_SYMBOLS[0].sym, DEFAULT_CHART_SYMBOLS[0].label);
+        const remaining = list.length > 0 ? list[0] : INITIAL_SYMBOLS[0];
+        switchChartSymbol(remaining.sym, remaining.label);
     } else {
         renderSymbolPills();
     }

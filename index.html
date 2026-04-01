@@ -324,8 +324,18 @@
                         <!-- Populated dynamically by renderSymbolPills() -->
                     </div>
                     <div class="chart-custom-sym">
-                        <input type="text" id="chart-custom-input" class="input-field" placeholder="Pin a symbol..." style="font-size:0.75rem; padding:4px 8px; width:120px;" onkeydown="if(event.key==='Enter')loadCustomSymbol()">
-                        <button class="btn btn-primary btn-sm" onclick="loadCustomSymbol()" style="padding:4px 10px; font-size:0.7rem;">+ Pin</button>
+                        <select id="chart-broker-select" class="input-field" style="font-size:0.72rem; padding:4px 4px; width:auto; min-width:80px;">
+                            <option value="OANDA">OANDA</option>
+                            <option value="FX">FX</option>
+                            <option value="PEPPERSTONE">Pepperstone</option>
+                            <option value="FOREXCOM">Forex.com</option>
+                            <option value="SAXO">Saxo</option>
+                            <option value="CAPITALCOM">Capital.com</option>
+                            <option value="BITSTAMP">Bitstamp</option>
+                            <option value="BINANCE">Binance</option>
+                        </select>
+                        <input type="text" id="chart-custom-input" class="input-field" placeholder="e.g. GBPJPY" style="font-size:0.75rem; padding:4px 8px; width:100px;" onkeydown="if(event.key==='Enter')loadCustomSymbol()">
+                        <button class="btn btn-primary btn-sm" onclick="loadCustomSymbol()" style="padding:4px 10px; font-size:0.7rem; white-space:nowrap;">+ Pin</button>
                     </div>
                 </div>
 
