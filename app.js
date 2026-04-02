@@ -892,17 +892,17 @@ function renderPlanEditor() {
                         <div style="flex:1;">
                             <p class="ef-label" style="margin-bottom:0.4rem;">Primary setup reference</p>
                             <label class="ef-upload-zone">
-                                <input type="file" accept="image/*" style="display:none;" onchange="previewImage(this, 'img-setup')">
-                                <img id="img-setup" src="" alt="" style="display:none; width:100%; height:100%; object-fit:cover; border-radius:0.5rem;">
-                                <span id="img-setup-icon" class="ef-upload-placeholder"><i data-lucide="upload" style="width:18px;height:18px;opacity:0.3;"></i><span>Drop to upload</span></span>
+                                <input type="file" accept="image/*" style="display:none;" onchange="previewImage(this, 'imgSetup')">
+                                <img id="img-imgSetup" src="${plan.imgSetup || ''}" alt="" style="display:${plan.imgSetup ? 'block' : 'none'}; width:100%; height:100%; object-fit:cover; border-radius:0.5rem;">
+                                <span id="icon-imgSetup" class="ef-upload-placeholder" style="display:${plan.imgSetup ? 'none' : 'flex'}"><i data-lucide="upload" style="width:18px;height:18px;opacity:0.3;"></i><span>Drop to upload</span></span>
                             </label>
                         </div>
                         <div style="flex:1;">
                             <p class="ef-label" style="margin-bottom:0.4rem;">Validated entry examples</p>
                             <label class="ef-upload-zone">
-                                <input type="file" accept="image/*" style="display:none;" onchange="previewImage(this, 'img-entry')">
-                                <img id="img-entry" src="" alt="" style="display:none; width:100%; height:100%; object-fit:cover; border-radius:0.5rem;">
-                                <span id="img-entry-icon" class="ef-upload-placeholder"><i data-lucide="upload" style="width:18px;height:18px;opacity:0.3;"></i><span>Drop to upload</span></span>
+                                <input type="file" accept="image/*" style="display:none;" onchange="previewImage(this, 'imgEntry')">
+                                <img id="img-imgEntry" src="${plan.imgEntry || ''}" alt="" style="display:${plan.imgEntry ? 'block' : 'none'}; width:100%; height:100%; object-fit:cover; border-radius:0.5rem;">
+                                <span id="icon-imgEntry" class="ef-upload-placeholder" style="display:${plan.imgEntry ? 'none' : 'flex'}"><i data-lucide="upload" style="width:18px;height:18px;opacity:0.3;"></i><span>Drop to upload</span></span>
                             </label>
                         </div>
                     </div>
@@ -1160,16 +1160,50 @@ function saveField(field, value) {
 }
 
 // --- IMAGE PREVIEW ---
-function previewImage(input, imgId) {
+function previewImage(input, fieldName) {
     if (!input.files || !input.files[0]) return;
+    const file = input.files[0];
     const reader = new FileReader();
+
     reader.onload = e => {
-        const img = document.getElementById(imgId);
-        const icon = document.getElementById(imgId + '-icon');
-        if (img) { img.src = e.target.result; img.style.display = 'block'; }
-        if (icon) icon.style.display = 'none';
+        const img = new Image();
+        img.onload = () => {
+            const canvas = document.createElement('canvas');
+            const MAX_WIDTH = 800;
+            const MAX_HEIGHT = 800;
+            let width = img.width;
+            let height = img.height;
+
+            if (width > height) {
+                if (width > MAX_WIDTH) { height *= MAX_WIDTH / width; width = MAX_WIDTH; }
+            } else {
+                if (height > MAX_HEIGHT) { width *= MAX_HEIGHT / height; height = MAX_HEIGHT; }
+            }
+            canvas.width = width;
+            canvas.height = height;
+
+            const ctx = canvas.getContext('2d');
+            ctx.drawImage(img, 0, 0, width, height);
+
+            // Compress aggressively as JPEG to fit under Firestore 1MB limits
+            const compressedBase64 = canvas.toDataURL('image/jpeg', 0.6);
+
+            // Update DOM
+            const domImg = document.getElementById('img-' + fieldName);
+            const domIcon = document.getElementById('icon-' + fieldName);
+            if (domImg) { domImg.src = compressedBase64; domImg.style.display = 'block'; }
+            if (domIcon) domIcon.style.display = 'none';
+
+            // Save to State
+            const plan = state.plans.find(p => p.id === activePlanId);
+            if (plan) {
+                plan[fieldName] = compressedBase64;
+                saveState();
+            }
+        };
+        img.src = e.target.result;
     };
-    reader.readAsDataURL(input.files[0]);
+    reader.readAsDataURL(file);
 }
 
 // --- PLAN ACTIONS ---
