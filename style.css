@@ -1161,27 +1161,28 @@ label {
 /* Action Buttons Group */
 .ef-actions-container {
     display: flex; gap: 0.5rem; margin-top: 0.5rem; width: 100%; align-items: stretch;
+    flex-wrap: wrap;
 }
 .ef-actions-container .ef-complete-btn { margin-top: 0; }
 .ef-secondary-action-btn {
-    flex: 1; min-width: 0;
+    flex: 1 1 calc(50% - 0.25rem);
     padding: 0.7rem 1rem; border-radius: 0.5rem;
     border: 1px solid var(--border-color); cursor: pointer; font-size: 0.85rem; font-weight: 600;
     display: flex; align-items: center; justify-content: center; gap: 0.4rem;
     background: #fff; color: var(--text-secondary);
     transition: background 0.15s, border-color 0.15s;
-    white-space: nowrap;
+    white-space: nowrap; text-align: center;
 }
 .ef-secondary-action-btn:hover { background: #F8FAFC; border-color: #CBD5E1; color: var(--text-primary); }
 
 @media (max-width: 768px) {
     .ef-actions-container { flex-direction: column; }
-    .ef-secondary-action-btn { width: 100%; flex: auto; }
+    .ef-secondary-action-btn { width: 100%; flex: 1 1 100%; }
 }
 
 /* Mark Complete Button */
 .ef-complete-btn {
-    flex: 1; min-width: 0;
+    flex: 1 1 100%; min-width: 0;
     width: 100%; padding: 0.7rem 1rem; border-radius: 0.5rem;
     border: none; cursor: pointer; font-size: 0.85rem; font-weight: 600;
     display: flex; align-items: center; justify-content: center; gap: 0.4rem;
