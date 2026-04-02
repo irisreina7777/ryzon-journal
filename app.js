@@ -966,12 +966,21 @@ function renderPlanEditor() {
                         onblur="saveField('tradingNotes', this.innerText.trim())">${plan.tradingNotes}</div>
                 </div>
 
-                <!-- Mark Session Complete -->
+                <!-- Actions -->
                 <div class="ef-session-count">${plan.lastReviewed || ''}</div>
-                <div class="ef-session-count">${(plan.sessionHistory || []).length} session${(plan.sessionHistory || []).length !== 1 ? 's' : ''} archived</div>
-                <button class="ef-complete-btn" onclick="markReviewed()">
-                    <i data-lucide="check" style="width:14px;height:14px;"></i> Mark Session Complete
-                </button>
+                <div class="ef-session-count" style="margin-bottom:0.5rem;">${(plan.sessionHistory || []).length} session${(plan.sessionHistory || []).length !== 1 ? 's' : ''} archived</div>
+                
+                <div class="ef-actions-container">
+                    <button class="ef-secondary-action-btn" onclick="document.activeElement.blur(); forceSync();">
+                        <i data-lucide="save" style="width:14px;height:14px;"></i> Save Plan
+                    </button>
+                    <button class="ef-secondary-action-btn" onclick="createNewPlan()">
+                        <i data-lucide="plus" style="width:14px;height:14px;"></i> Create New Plan
+                    </button>
+                    <button class="ef-complete-btn" onclick="markReviewed()">
+                        <i data-lucide="check" style="width:14px;height:14px;"></i> Mark Session Complete
+                    </button>
+                </div>
             </div>
         </div>
     `;
