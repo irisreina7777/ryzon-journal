@@ -680,7 +680,18 @@ function renderPlanEditor() {
     if (!editor) return;
     const plan = getActivePlan();
     if (!plan) {
-        editor.innerHTML = '<p class="text-muted text-sm" style="padding:2rem;">No plan selected. Click "+ New Plan" to create one.</p>';
+        editor.innerHTML = `
+            <div style="display:flex; flex-direction:column; align-items:center; justify-content:center; padding:5rem 2rem; text-align:center;">
+                <div style="width:64px; height:64px; border-radius:50%; background:#F1F5F9; display:flex; align-items:center; justify-content:center; margin-bottom:1.5rem;">
+                    <i data-lucide="layers" style="width:32px; height:32px; color:var(--brand-blue); opacity:0.8;"></i>
+                </div>
+                <h3 style="color:var(--text-primary); margin-bottom:0.5rem; font-size:1.1rem;">Session Complete</h3>
+                <p style="color:var(--text-muted); font-size:0.875rem; max-width:300px; margin:0 auto 1.5rem; line-height:1.5;">Your execution session has been archived. Select an existing plan or create a new one.</p>
+                <button class="ef-complete-btn" style="width:auto; padding:0.75rem 1.5rem;" onclick="openNewPlanModal()">
+                    <i data-lucide="plus" style="width:16px;height:16px;"></i> Create New Plan
+                </button>
+            </div>
+        `;
         return;
     }
 
@@ -971,10 +982,10 @@ function renderPlanEditor() {
                 <div class="ef-session-count" style="margin-bottom:0.5rem;">${(plan.sessionHistory || []).length} session${(plan.sessionHistory || []).length !== 1 ? 's' : ''} archived</div>
                 
                 <div class="ef-actions-container">
-                    <button class="ef-secondary-action-btn" onclick="document.activeElement.blur(); forceSync();">
+                    <button class="ef-secondary-action-btn" onclick="savePlanManual(this)">
                         <i data-lucide="save" style="width:14px;height:14px;"></i> Save Plan
                     </button>
-                    <button class="ef-secondary-action-btn" onclick="createNewPlan()">
+                    <button class="ef-secondary-action-btn" onclick="openNewPlanModal()">
                         <i data-lucide="plus" style="width:14px;height:14px;"></i> Create New Plan
                     </button>
                     <button class="ef-complete-btn" onclick="markReviewed()">
@@ -1043,6 +1054,10 @@ function markReviewed() {
     plan.invalidationLevel = '';
     plan.criteria.forEach(c => c.checked = false);
     plan.lastReviewed = `Last session completed: ${dateStr} at ${timeStr}`;
+
+    // Deselect the plan to show empty state
+    Object.assign(state, { activePlanId: null });
+    activePlanId = null;
 
     saveState();
 
@@ -1207,6 +1222,24 @@ function previewImage(input, fieldName) {
 }
 
 // --- PLAN ACTIONS ---
+function savePlanManual(btn) {
+    document.activeElement.blur();
+    // Use forceSync instead to actually push the local changes clearly and display visual topbar spinner
+    forceSync();
+    
+    // Provide visual inline feedback
+    const originalContent = btn.innerHTML;
+    btn.innerHTML = '<i data-lucide="check" style="width:14px;height:14px;color:var(--success);"></i> Saved!';
+    btn.style.borderColor = 'var(--success)';
+    btn.style.color = 'var(--success)';
+    lucide.createIcons();
+    setTimeout(() => {
+        btn.innerHTML = originalContent;
+        btn.style.borderColor = '';
+        btn.style.color = '';
+        lucide.createIcons();
+    }, 2000);
+}
 function deletePlan(id) {
     if (state.plans.length <= 1) { alert('You must have at least one plan.'); return; }
     if (!confirm('Delete this plan? This cannot be undone.')) return;
