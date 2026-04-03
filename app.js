@@ -2175,3 +2175,142 @@ function initializeApp() {
 initializeApp();
 
 // End of app.js
+
+// ============================================================
+// AI TRADING BOT LOGIC
+// ============================================================
+
+function openAISettingsModal() {
+    const key = localStorage.getItem('ryzon_openai_key') || '';
+    document.getElementById('openai-api-key').value = key;
+    document.getElementById('ai-settings-modal').classList.remove('hidden');
+}
+
+function closeAISettingsModal() {
+    document.getElementById('ai-settings-modal').classList.add('hidden');
+}
+
+function saveAISettings() {
+    const key = document.getElementById('openai-api-key').value.trim();
+    if (key) {
+        localStorage.setItem('ryzon_openai_key', key);
+        closeAISettingsModal();
+        showSessionToast('AI Key saved locally.');
+    } else {
+        alert('Please enter a valid API key.');
+    }
+}
+
+async function callOpenAI(systemPrompt, userPrompt) {
+    const apiKey = localStorage.getItem('ryzon_openai_key');
+    if (!apiKey) {
+        openAISettingsModal();
+        return `<p style="color:var(--text-danger);">Error: No API Key found. Please save your OpenAI API Key in the settings.</p>`;
+    }
+    
+    try {
+        const response = await fetch('https://api.openai.com/v1/chat/completions', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${apiKey}`
+            },
+            body: JSON.stringify({
+                model: 'gpt-4o', // Use efficient latest model or default to gpt-3.5-turbo if cost constrained
+                messages: [
+                    { role: 'system', content: systemPrompt },
+                    { role: 'user', content: userPrompt }
+                ],
+                temperature: 0.7
+            })
+        });
+        
+        if (!response.ok) {
+            const err = await response.json();
+            return `<p style="color:var(--text-danger);">API Error: ${err.error?.message || response.statusText}</p>`;
+        }
+        
+        const data = await response.json();
+        const text = data.choices[0].message.content;
+        return parseAIMarkdown(text);
+    } catch (e) {
+        return `<p style="color:var(--text-danger);">Network Error: ${e.message}</p>`;
+    }
+}
+
+function parseAIMarkdown(text) {
+    let html = text;
+    // Bold
+    html = html.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
+    // Lists
+    html = html.replace(/(?:\n|^)- (.*)/g, '<li style="margin-left:1.5rem; margin-bottom:0.25rem;">$1</li>');
+    // Headers
+    html = html.replace(/(?:\n|^)### (.*)/g, '<h3 style="margin-top:1.5rem; margin-bottom:0.5rem; color:var(--brand-blue);">$1</h3>');
+    html = html.replace(/(?:\n|^)## (.*)/g, '<h2 style="margin-top:2rem; margin-bottom:0.75rem;">$1</h2>');
+    // Line breaks
+    html = html.replace(/\n/g, '<br>');
+    return html;
+}
+
+function showAILoading() {
+    const area = document.getElementById('ai-output-area');
+    area.innerHTML = `
+        <div style="display:flex; flex-direction:column; align-items:center; justify-content:center; height:100%; color:var(--brand-blue);">
+            <i data-lucide="loader-2" class="lucide-spin" style="width:32px;height:32px;margin-bottom:1rem;"></i>
+            <p style="font-weight:600; animation:pulse 1.5s infinite;">Analyzing data...</p>
+        </div>
+    `;
+    lucide.createIcons();
+}
+
+async function generateNewsSummary() {
+    showAILoading();
+    const area = document.getElementById('ai-output-area');
+    
+    // Fetch JSON from ForexFactory
+    let newsStr = "";
+    try {
+        const req = await fetch('https://nfs.faireconomy.media/ff_calendar_thisweek.json');
+        const news = await req.json();
+        // Filter high/medium impact
+        const relevantNews = news.filter(n => n.impact === 'High' || n.impact === 'Medium');
+        newsStr = JSON.stringify(relevantNews);
+    } catch (e) {
+        area.innerHTML = `<p style="color:var(--text-danger);">Failed to fetch news calendar.</p>`;
+        return;
+    }
+    
+    const relevantPairs = [...new Set(state.trades.slice(-20).map(t => t.asset))];
+    
+    const sysPrompt = "You are a professional forex trading assistant. Summarize today's major economic news and explain its expected impact on currency pairs. Keep it highly actionable, professional, and concise. Format with bullet points and bold text where necessary.";
+    const usrPrompt = `Here is the week's high/medium impact news in JSON: ${newsStr}\n\nThe user typically trades these pairs: ${relevantPairs.join(', ')}. Focus your summary on events happening today or tomorrow and how they might affect these specific pairs.`;
+    
+    const htmlResponse = await callOpenAI(sysPrompt, usrPrompt);
+    area.innerHTML = `<div class="ai-response-content">${htmlResponse}</div>`;
+}
+
+async function generateTradeVerdict() {
+    if (state.trades.length === 0) {
+        document.getElementById('ai-output-area').innerHTML = `<p style="color:var(--text-muted);">Not enough trades logged to generate a verdict.</p>`;
+        return;
+    }
+    
+    showAILoading();
+    const area = document.getElementById('ai-output-area');
+    
+    // Grab the last 30 trades so we don't blow up token limits
+    const recentTrades = state.trades.slice(-30).map(t => ({
+        date: t.date.split('T')[0],
+        asset: t.asset,
+        pnl: t.pnl,
+        discipline: t.discipline,
+        emotions: t.emotions
+    }));
+    
+    const sysPrompt = "You are an elite quantitative trading psychologist and risk manager. The user will provide a dump of their recent trades as JSON. Break down their performance. Identify their most traded pairs, which pairs give the highest returns, their overall win-rate/profitability, and how their specific emotions/discipline affect outcomes. Conclude with a strict, actionable 'AI Verdict' on what they should focus on or avoid. Keep the response sleek and professional. Use Markdown headers (###) and bullet points.";
+    
+    const usrPrompt = `Here are my last ${recentTrades.length} trades: ${JSON.stringify(recentTrades)}`;
+    
+    const htmlResponse = await callOpenAI(sysPrompt, usrPrompt);
+    area.innerHTML = `<div class="ai-response-content">${htmlResponse}</div>`;
+}
