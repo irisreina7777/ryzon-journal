@@ -2203,9 +2203,35 @@ function saveAISettings() {
 
 async function callOpenAI(systemPrompt, userPrompt) {
     const apiKey = localStorage.getItem('ryzon_openai_key');
+    
+    // DEMO MODE / NO API KEY FALLBACK
     if (!apiKey) {
-        openAISettingsModal();
-        return `<p style="color:var(--text-danger);">Error: No API Key found. Please save your OpenAI API Key in the settings.</p>`;
+        // Wait 2.5 seconds to simulate AI "thinking"
+        await new Promise(r => setTimeout(r, 2500));
+        
+        let demoResponse = "";
+        if (userPrompt.includes('news')) {
+            demoResponse = `### 📰 Today's Market Analysis (Demo Mode)
+Based on today's high-impact events across the economic calendar:
+
+- **USD Pairs (EURUSD, USDJPY):** High volatility expected at 8:30 AM EST due to Non-Farm Payrolls and Average Hourly Earnings. Wait for initial 15-minute sweep before entering structural setups.
+- **AUD/NZD:** Markets are relatively quiet. Standard continuation structures are highly favored.
+- **Gold (XAUUSD):** With pending data drops, Gold is likely to range between key liquidity zones. Avoid taking breakout trades prior to the NY open.
+
+*Note: Please add your OpenAI API Key in settings to get real-time, live insights pulled directly from your exact traded pairs!*`;
+        } else {
+            demoResponse = `### 🧠 Trading Verdict (Demo Mode)
+Reviewing your recent historical performance and discipline metrics:
+
+- **Highest Profitability:** You are statistically most profitable trading **EURUSD** during the **London Session**.
+- **Discipline Check:** You lose an average of **-1.5%** more equity on trades where you tag the emotion **'FOMO'**.
+- **Structural Edge:** Your win rate jumps to **68%** when you strictly follow your "Pullback" rule.
+
+**AI Verdict:** Stop trading outside of your designated London window. You are bleeding capital in late NY sessions due to impatience. Focus solely on EURUSD pullback entries this week.
+
+*Note: This is a simulated response. To analyze your actual raw trade data, please enter your OpenAI API key in the settings.*`;
+        }
+        return parseAIMarkdown(demoResponse);
     }
     
     try {
@@ -2216,7 +2242,7 @@ async function callOpenAI(systemPrompt, userPrompt) {
                 'Authorization': `Bearer ${apiKey}`
             },
             body: JSON.stringify({
-                model: 'gpt-4o', // Use efficient latest model or default to gpt-3.5-turbo if cost constrained
+                model: 'gpt-4o', 
                 messages: [
                     { role: 'system', content: systemPrompt },
                     { role: 'user', content: userPrompt }
