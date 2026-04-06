@@ -2177,12 +2177,12 @@ initializeApp();
 // End of app.js
 
 // ============================================================
-// AI TRADING BOT LOGIC
+// FLASH AI (GEMINI 1.5) & LOCAL ANALYTICS
 // ============================================================
 
 function openAISettingsModal() {
-    const key = localStorage.getItem('ryzon_openai_key') || '';
-    document.getElementById('openai-api-key').value = key;
+    const key = localStorage.getItem('ryzon_gemini_key') || '';
+    document.getElementById('openai-api-key').value = key; // Reusing ID for simplicity
     document.getElementById('ai-settings-modal').classList.remove('hidden');
 }
 
@@ -2193,75 +2193,170 @@ function closeAISettingsModal() {
 function saveAISettings() {
     const key = document.getElementById('openai-api-key').value.trim();
     if (key) {
-        localStorage.setItem('ryzon_openai_key', key);
+        localStorage.setItem('ryzon_gemini_key', key);
         closeAISettingsModal();
-        showSessionToast('AI Key saved locally.');
+        showSessionToast('Gemini Key saved.');
     } else {
-        alert('Please enter a valid API key.');
+        alert('Please enter a valid key.');
     }
 }
 
-async function callOpenAI(systemPrompt, userPrompt) {
-    const apiKey = localStorage.getItem('ryzon_openai_key');
-    
-    // DEMO MODE / NO API KEY FALLBACK
-    if (!apiKey) {
-        // Wait 2.5 seconds to simulate AI "thinking"
-        await new Promise(r => setTimeout(r, 2500));
-        
-        let demoResponse = "";
-        if (userPrompt.includes('news')) {
-            demoResponse = `### 📰 Today's Market Analysis (Demo Mode)
-Based on today's high-impact events across the economic calendar:
+async function callGemini(prompt) {
+    const apiKey = localStorage.getItem('ryzon_gemini_key');
+    if (!apiKey) return null;
 
-- **USD Pairs (EURUSD, USDJPY):** High volatility expected at 8:30 AM EST due to Non-Farm Payrolls and Average Hourly Earnings. Wait for initial 15-minute sweep before entering structural setups.
-- **AUD/NZD:** Markets are relatively quiet. Standard continuation structures are highly favored.
-- **Gold (XAUUSD):** With pending data drops, Gold is likely to range between key liquidity zones. Avoid taking breakout trades prior to the NY open.
-
-*Note: Please add your OpenAI API Key in settings to get real-time, live insights pulled directly from your exact traded pairs!*`;
-        } else {
-            demoResponse = `### 🧠 Trading Verdict (Demo Mode)
-Reviewing your recent historical performance and discipline metrics:
-
-- **Highest Profitability:** You are statistically most profitable trading **EURUSD** during the **London Session**.
-- **Discipline Check:** You lose an average of **-1.5%** more equity on trades where you tag the emotion **'FOMO'**.
-- **Structural Edge:** Your win rate jumps to **68%** when you strictly follow your "Pullback" rule.
-
-**AI Verdict:** Stop trading outside of your designated London window. You are bleeding capital in late NY sessions due to impatience. Focus solely on EURUSD pullback entries this week.
-
-*Note: This is a simulated response. To analyze your actual raw trade data, please enter your OpenAI API key in the settings.*`;
-        }
-        return parseAIMarkdown(demoResponse);
-    }
-    
     try {
-        const response = await fetch('https://api.openai.com/v1/chat/completions', {
+        const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`;
+        const response = await fetch(url, {
             method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'Authorization': `Bearer ${apiKey}`
-            },
+            headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
-                model: 'gpt-4o', 
-                messages: [
-                    { role: 'system', content: systemPrompt },
-                    { role: 'user', content: userPrompt }
-                ],
-                temperature: 0.7
+                contents: [{ parts: [{ text: prompt }] }]
             })
         });
-        
-        if (!response.ok) {
-            const err = await response.json();
-            return `<p style="color:var(--text-danger);">API Error: ${err.error?.message || response.statusText}</p>`;
-        }
-        
+
+        if (!response.ok) throw new Error('Gemini API Error');
         const data = await response.json();
-        const text = data.choices[0].message.content;
-        return parseAIMarkdown(text);
+        return parseAIMarkdown(data.candidates[0].content.parts[0].text);
     } catch (e) {
-        return `<p style="color:var(--text-danger);">Network Error: ${e.message}</p>`;
+        console.error(e);
+        return `<p style="color:var(--text-danger);">API Error: Could not connect to Gemini.</p>`;
     }
+}
+
+function calculateLocalStats() {
+    if (state.trades.length === 0) return null;
+    
+    const assets = {};
+    const emotions = {};
+    let disciplineWins = 0, disciplineTotal = 0;
+    let indisciplineWins = 0, indisciplineTotal = 0;
+
+    state.trades.forEach(t => {
+        // Asset stats
+        if (!assets[t.asset]) assets[t.asset] = { wins: 0, total: 0, pnl: 0 };
+        assets[t.asset].total++;
+        assets[t.asset].pnl += t.pnl;
+        if (t.pnl > 0) assets[t.asset].wins++;
+
+        // Discipline stats
+        const isDisc = t.discipline === 'Yes' || t.discipline === 'Yes, strict adherence';
+        if (isDisc) {
+            disciplineTotal++;
+            if (t.pnl > 0) disciplineWins++;
+        } else {
+            indisciplineTotal++;
+            if (t.pnl > 0) indisciplineWins++;
+        }
+
+        // Emotion stats
+        (t.emotions || []).forEach(e => {
+            if (!emotions[e]) emotions[e] = { pnl: 0, total: 0 };
+            emotions[e].total++;
+            emotions[e].pnl += t.pnl;
+        });
+    });
+
+    const assetEntries = Object.entries(assets);
+    const bestAsset = assetEntries.sort((a,b) => b[1].pnl - a[1].pnl)[0];
+    
+    const emotionEntries = Object.entries(emotions);
+    const worstEmotion = emotionEntries.sort((a,b) => a[1].pnl - b[1].pnl)[0];
+
+    return {
+        totalTrades: state.trades.length,
+        winRate: ((state.trades.filter(t => t.pnl > 0).length / state.trades.length) * 100).toFixed(1),
+        bestAsset: bestAsset ? { name: bestAsset[0], pnl: bestAsset[1].pnl.toFixed(2), wr: ((bestAsset[1].wins/bestAsset[1].total)*100).toFixed(0) } : null,
+        disciplineWR: disciplineTotal > 0 ? ((disciplineWins/disciplineTotal)*100).toFixed(1) : '0',
+        indisciplineWR: indisciplineTotal > 0 ? ((indisciplineWins/indisciplineTotal)*100).toFixed(1) : '0',
+        worstEmotion: worstEmotion ? { name: worstEmotion[0], pnl: worstEmotion[1].pnl.toFixed(2) } : null
+    };
+}
+
+async function generateTradeVerdict() {
+    const stats = calculateLocalStats();
+    if (!stats) {
+        document.getElementById('ai-output-area').innerHTML = `<p class="text-muted">No trade data to analyze yet.</p>`;
+        return;
+    }
+
+    showAILoading();
+    const area = document.getElementById('ai-output-area');
+
+    const localReport = `
+        <h3 style="margin-bottom:1rem; display:flex; align-items:center; gap:0.5rem;"><i data-lucide="bar-chart-3" style="width:20px;"></i> Local Smart Report</h3>
+        <div style="display:grid; grid-template-columns:1fr 1fr; gap:1rem; margin-bottom:1.5rem;">
+            <div class="card" style="padding:1rem; background:#F0F9FF; border-color:#BAE6FD; border-radius:0.75rem;">
+                <p style="font-size:0.7rem; color:#0369A1; text-transform:uppercase; font-weight:700;">Win Rate</p>
+                <p style="font-size:1.5rem; font-weight:800; color:#0C4A6E;">${stats.winRate}%</p>
+            </div>
+            <div class="card" style="padding:1rem; background:#F0FDF4; border-color:#BBF7D0; border-radius:0.75rem;">
+                <p style="font-size:0.7rem; color:#15803D; text-transform:uppercase; font-weight:700;">Best Pair</p>
+                <p style="font-size:1.5rem; font-weight:800; color:#064E3B;">${stats.bestAsset?.name || 'N/A'}</p>
+            </div>
+        </div>
+        <ul style="list-style:none; padding:0; font-size:0.9rem; color:var(--text-primary);">
+            <li style="margin-bottom:0.75rem; display:flex; gap:0.5rem;"><i data-lucide="check-circle" style="width:16px; color:var(--success); flex-shrink:0;"></i> <span><strong>Discipline Edge:</strong> Your win rate is <strong>${stats.disciplineWR}%</strong> when you follow your plan.</span></li>
+            <li style="margin-bottom:0.75rem; display:flex; gap:0.5rem;"><i data-lucide="alert-triangle" style="width:16px; color:var(--danger); flex-shrink:0;"></i> <span><strong>Emotional Impact:</strong> <strong>'${stats.worstEmotion?.name || 'none'}'</strong> has cost you <strong>$${Math.abs(stats.worstEmotion?.pnl || 0)}</strong>.</span></li>
+        </ul>
+    `;
+
+    const apiKey = localStorage.getItem('ryzon_gemini_key');
+    if (!apiKey) {
+        area.innerHTML = localReport + `<div style="margin-top:1.5rem; padding:1rem; background:#FFFBEB; border-radius:0.5rem; border:1px solid #FEF3C7; font-size:0.8rem; color:#92400E;">💡 <strong>Note:</strong> Add a Gemini API key in settings for a deeper behavioral verdict from Flash AI!</div>`;
+        lucide.createIcons();
+        return;
+    }
+
+    const prompt = `System: You are an elite trading performance coach. 
+    Analyze these stats calculated from the user's trading journal:
+    - Overall Win Rate: ${stats.winRate}%
+    - Best pair: ${stats.bestAsset?.name} (Win Rate: ${stats.bestAsset?.wr}%)
+    - Discipline Win Rate: ${stats.disciplineWR}% vs Indiscipline Win Rate: ${stats.indisciplineWR}%
+    - Worst Emotion: ${stats.worstEmotion?.name} (Total Loss: $${stats.worstEmotion?.pnl})
+    Write 3 short, punchy bullet points of advice and 1 final "Verdict" statement. Keep it professional and direct. Use ### for headers.`;
+
+    const aiResponse = await callGemini(prompt);
+    area.innerHTML = localReport + `<hr style="margin:1.5rem 0; border:0; border-top:1px solid var(--border-color);">${aiResponse || 'AI analysis unavailable.'}`;
+    lucide.createIcons();
+}
+
+async function generateNewsSummary() {
+    showAILoading();
+    const area = document.getElementById('ai-output-area');
+    
+    let newsStr = "";
+    try {
+        const req = await fetch('https://nfs.faireconomy.media/ff_calendar_thisweek.json');
+        const news = await req.json();
+        const relevantNews = news.filter(n => n.impact === 'High' || n.impact === 'Medium').slice(0, 15);
+        newsStr = JSON.stringify(relevantNews);
+    } catch (e) {
+        area.innerHTML = `<p style="color:var(--text-danger);">Failed to fetch live news.</p>`;
+        return;
+    }
+
+    const apiKey = localStorage.getItem('ryzon_gemini_key');
+    if (!apiKey) {
+        area.innerHTML = `
+            <div style="text-align:center; padding:2rem; color:var(--text-muted);">
+                <i data-lucide="newspaper" style="width:32px; height:32px; margin-bottom:1rem; opacity:0.5;"></i>
+                <p>Global news analysis requires a <strong>Gemini API key</strong>.</p>
+                <button class="nav-btn action-btn text-primary mt-2" onclick="openAISettingsModal()">Go to Settings</button>
+            </div>
+        `;
+        lucide.createIcons();
+        return;
+    }
+
+    const prompt = `You are a professional forex news analyst. I am providing you with the week's major economic events: ${newsStr}. 
+    Please identify the 3 most important events happening today or tomorrow. 
+    Explain how they might impact the USD and specific major currency pairs. 
+    Be extremely concise and professional. Use ### headers and bullet points.`;
+
+    const aiResponse = await callGemini(prompt);
+    area.innerHTML = `<div class="ai-response-content">${aiResponse}</div>`;
+    lucide.createIcons();
 }
 
 function parseAIMarkdown(text) {
@@ -2282,61 +2377,9 @@ function showAILoading() {
     const area = document.getElementById('ai-output-area');
     area.innerHTML = `
         <div style="display:flex; flex-direction:column; align-items:center; justify-content:center; height:100%; color:var(--brand-blue);">
-            <i data-lucide="loader-2" class="lucide-spin" style="width:32px;height:32px;margin-bottom:1rem;"></i>
-            <p style="font-weight:600; animation:pulse 1.5s infinite;">Analyzing data...</p>
+            <i data-lucide="zap" class="lucide-spin" style="width:32px;height:32px;margin-bottom:1rem;"></i>
+            <p style="font-weight:600;">Flash AI Processing...</p>
         </div>
     `;
     lucide.createIcons();
-}
-
-async function generateNewsSummary() {
-    showAILoading();
-    const area = document.getElementById('ai-output-area');
-    
-    // Fetch JSON from ForexFactory
-    let newsStr = "";
-    try {
-        const req = await fetch('https://nfs.faireconomy.media/ff_calendar_thisweek.json');
-        const news = await req.json();
-        // Filter high/medium impact
-        const relevantNews = news.filter(n => n.impact === 'High' || n.impact === 'Medium');
-        newsStr = JSON.stringify(relevantNews);
-    } catch (e) {
-        area.innerHTML = `<p style="color:var(--text-danger);">Failed to fetch news calendar.</p>`;
-        return;
-    }
-    
-    const relevantPairs = [...new Set(state.trades.slice(-20).map(t => t.asset))];
-    
-    const sysPrompt = "You are a professional forex trading assistant. Summarize today's major economic news and explain its expected impact on currency pairs. Keep it highly actionable, professional, and concise. Format with bullet points and bold text where necessary.";
-    const usrPrompt = `Here is the week's high/medium impact news in JSON: ${newsStr}\n\nThe user typically trades these pairs: ${relevantPairs.join(', ')}. Focus your summary on events happening today or tomorrow and how they might affect these specific pairs.`;
-    
-    const htmlResponse = await callOpenAI(sysPrompt, usrPrompt);
-    area.innerHTML = `<div class="ai-response-content">${htmlResponse}</div>`;
-}
-
-async function generateTradeVerdict() {
-    if (state.trades.length === 0) {
-        document.getElementById('ai-output-area').innerHTML = `<p style="color:var(--text-muted);">Not enough trades logged to generate a verdict.</p>`;
-        return;
-    }
-    
-    showAILoading();
-    const area = document.getElementById('ai-output-area');
-    
-    // Grab the last 30 trades so we don't blow up token limits
-    const recentTrades = state.trades.slice(-30).map(t => ({
-        date: t.date.split('T')[0],
-        asset: t.asset,
-        pnl: t.pnl,
-        discipline: t.discipline,
-        emotions: t.emotions
-    }));
-    
-    const sysPrompt = "You are an elite quantitative trading psychologist and risk manager. The user will provide a dump of their recent trades as JSON. Break down their performance. Identify their most traded pairs, which pairs give the highest returns, their overall win-rate/profitability, and how their specific emotions/discipline affect outcomes. Conclude with a strict, actionable 'AI Verdict' on what they should focus on or avoid. Keep the response sleek and professional. Use Markdown headers (###) and bullet points.";
-    
-    const usrPrompt = `Here are my last ${recentTrades.length} trades: ${JSON.stringify(recentTrades)}`;
-    
-    const htmlResponse = await callOpenAI(sysPrompt, usrPrompt);
-    area.innerHTML = `<div class="ai-response-content">${htmlResponse}</div>`;
 }
